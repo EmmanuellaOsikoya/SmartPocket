@@ -6,7 +6,6 @@ import React, { useState } from 'react';
 
 const Register: React.FC = () => {
     const [formData, setFormData] = useState({
-        username: '',
         email: '',
         password: '',
     });
@@ -25,7 +24,6 @@ const Register: React.FC = () => {
         setMessage('Registration successful! Please log in.');
         //Clears the form
         setFormData({
-            username: '',
             email: '',
             password: '',
         });
@@ -41,26 +39,10 @@ const Register: React.FC = () => {
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input
-          type="text"
-          name="username"
-          placeholder="Full Name"
-          value={formData.username}
-          onChange={handleChange}
-          className="p-2 border rounded"
-        />
-        <input
           type="email"
           name="email"
           placeholder="Email"
           value={formData.email}
-          onChange={handleChange}
-          className="p-2 border rounded"
-        />
-        <input
-          type="confirm password"
-          name="password"
-          placeholder="Password"
-          value={formData.password}
           onChange={handleChange}
           className="p-2 border rounded"
         />
