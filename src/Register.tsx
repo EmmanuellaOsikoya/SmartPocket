@@ -9,6 +9,7 @@ const Register: React.FC = () => {
         username: '',
         email: '',
         password: '',
+        confirmPassword: ''
     });
 
     const [message, setMessage] = useState<string | null>(null);
@@ -28,13 +29,14 @@ const Register: React.FC = () => {
             username: '',
             email: '',
             password: '',
+            confirmPassword: ''
         });
 
     }
 
     // Actual registration form
    return (
-    <div className="max-w-md mx-auto mt-10 p-6 border rounded shadow">
+   <div className="bg-red-200 p-10">  
       <h2 className="text-2xl font-bold mb-4">Create Account</h2>
 
       {message && <div className="text-green-500 mb-4">{message}</div>}
@@ -57,7 +59,7 @@ const Register: React.FC = () => {
           className="p-2 border rounded"
         />
         <input
-          type="confirm password"
+          type="password"
           name="password"
           placeholder="Password"
           value={formData.password}
@@ -66,9 +68,9 @@ const Register: React.FC = () => {
         />
         <input
           type="password"
-          name="password"
+          name="confirmPassword"
           placeholder="Password"
-          value={formData.password}
+          value={formData.confirmPassword}
           onChange={handleChange}
           className="p-2 border rounded"
         />
