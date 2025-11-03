@@ -3,8 +3,10 @@
 
 // imports needed for this page
 import React, { useState } from 'react';
+import {useNavigate} from 'react-router-dom';
 
 const Register: React.FC = () => {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         username: '',
         email: '',
@@ -23,7 +25,7 @@ const Register: React.FC = () => {
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        setMessage('Registration successful! Please log in.');
+        setMessage('Registration successful! Bringing you to the main page...');
         //Clears the form
         setFormData({
             username: '',
@@ -31,6 +33,10 @@ const Register: React.FC = () => {
             password: '',
             confirmPassword: ''
         });
+
+        setTimeout(() => {
+            navigate('/home');
+        }, 800);
 
     }
 
