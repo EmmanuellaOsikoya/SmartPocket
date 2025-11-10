@@ -39,8 +39,9 @@ const Register: React.FC = () => {
 
     // Actual registration form
    return (
-    <div className="max-w-md mx-auto mt-10 p-6 border rounded shadow">
-      <h2 className="text-2xl font-bold mb-4">Create Account</h2>
+  <div className='min-h-screen flex items-center justify-center bg-cover bg-center' style={{backgroundImage: "url('/saving1.webp')"}}>
+   <div className="max-w-md w-full bg-white bg-opacity-90 p-6 border rounded shadow-lg">
+      <h2 className="text-2xl font-bold mb-4">Login</h2>
 
       {message && <div className="text-green-500 mb-4">{message}</div>}
 
@@ -69,6 +70,7 @@ const Register: React.FC = () => {
         </button>
       </form>
     </div>
+  </div>
   );
 };
 

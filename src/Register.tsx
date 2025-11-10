@@ -42,7 +42,9 @@ const Register: React.FC = () => {
 
     // Actual registration form
    return (
-   <div className="bg-red-200 p-10">  
+
+  <div className='min-h-screen flex items-center justify-center bg-cover bg-center' style={{backgroundImage: "url('/saving2.webp')"}}>
+   <div className="max-w-md w-full bg-white bg-opacity-90 p-6 border rounded shadow-lg">
       <h2 className="text-2xl font-bold mb-4">Create Account</h2>
 
       {message && <div className="text-green-500 mb-4">{message}</div>}
@@ -93,6 +95,7 @@ const Register: React.FC = () => {
       </p>
 
     </div>
+  </div>
   );
 };
 
