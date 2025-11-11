@@ -5,7 +5,14 @@ const Home: React.FC = () => {
     const navigate = useNavigate();
     return (
     // Full screen container, centered
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-6">
+
+
+    <div
+      className="relative min-h-screen flex flex-col items-center justify-center bg-cover bg-center"
+      style={{ backgroundImage: "url('/bgimage3.webp')" }}
+    >
+
+    <div className="relative z-10 flex flex-col items-center gap-4 w-full max-w-xs p-6 bg-white bg-opacity-80 rounded-lg shadow-lg">
       {/* Page title */}
       <h1 className="text-4xl font-bold mb-6 text-center">
         Welcome to SmartPocket!
@@ -42,6 +49,7 @@ const Home: React.FC = () => {
         </button>
       </div>
     </div>
+</div>
   );
 };
 
