@@ -7,7 +7,11 @@ const Home: React.FC = () => {
             <h2 className="text-2xl font-semibold mb-4">What would you like to do?</h2>
 
             <a href="/expense-categorisation" className="text-blue-500 hover:underline">Put my expenditure into categories</a>
-            
+            <a href="/expense-categorisation" className="text-blue-500 hover:underline">Get Budgeting Tips</a>
+            <a href="/expense-categorisation" className="text-blue-500 hover:underline">Track my Spending</a>
+            <a href="/expense-categorisation" className="text-blue-500 hover:underline">Predict my Spending</a>
+
+
         </div>
     );
 };
