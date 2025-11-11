@@ -8,7 +8,7 @@ const Home: React.FC = () => {
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-6">
       {/* Page title */}
       <h1 className="text-4xl font-bold mb-6 text-center">
-        Welcome to SmartPocket
+        Welcome to SmartPocket!
       </h1>
       <h2 className="text-2xl font-semibold mb-8 text-center">
         What would you like to do?
@@ -23,13 +23,13 @@ const Home: React.FC = () => {
           Put my expenditure into categories
         </button>
         <button
-          className="w-full bg-green-500 text-white py-3 rounded hover:bg-green-600 transition"
+          className="w-full bg-teal-500 text-white py-3 rounded hover:bg-teal-600 transition"
           onClick={() => navigate("/budget-tips")}
         >
           Get Budgeting Tips
         </button>
         <button
-          className="w-full bg-yellow-500 text-white py-3 rounded hover:bg-yellow-600 transition"
+          className="w-full bg-rose-500 text-white py-3 rounded hover:bg-rose-600 transition"
           onClick={() => navigate("/track-spending")}
         >
           Track my Spending
