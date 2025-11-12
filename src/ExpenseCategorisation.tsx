@@ -11,6 +11,12 @@ const ExpenseCategorisation: React.FC = () => {
     // This tracks whether a file is being dragged over the dropping zone
     const [dragActive, setDragActive] = useState(false);
 
+    // Tracks upload and processing state
+    const [loading, setLoading] = useState(false);
+
+    // Stores categorisation results from backend
+    const [results, setResults] = useState<any | null>(null);
+
     // This is triggered when a file is dragged over the dropping zone
     const handleDrag = (e: DragEvent<HTMLDivElement>) => {
         e.preventDefault();
@@ -42,24 +48,32 @@ const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
 
 // Logic that will upload the bank statement file to backend for processing 
 const handleUpload = async () => {
+    // Ensures a file is selected
     if (!file) return alert("No file has been selected. Please select a file!");
     setLoading(true);
     setResults(null);
 
+    // Prepares the file for upload
     const formData = new FormData();
     formData.append('file', file);
 
+    // Uploads the file to the backend
     try {
        const res = await fetch("http://127.0.0.1:8000/upload", {
            method: "POST",
            body: formData,
        });
 
+       // Checks if the upload was successful
        if (!res.ok) {
            throw new Error("File upload failed");
 
-           const data = await res.json();
-            setResults(data);
+       }
+
+      // Parses and stores the response from the backend 
+      const data = await res.json();
+      setResults(data);
+
       } catch (err) {
           console.error(err);
           alert("An error occurred while uploading the file. Please try again.");
@@ -114,6 +128,24 @@ return (
             <p className="text-sm text-gray-700">{file.name}</p>
           </div>
         )}
+
+        <button
+          onClick={handleUpload}
+          disabled={loading}
+          className="mt-6 w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition disabled:opacity-50"
+        >
+          {loading ? "Processing..." : "Upload & Categorise"}
+        </button>
+
+        {results && (
+          <div className="mt-6 p-4 bg-green-50 border rounded">
+            <h2 className="font-semibold mb-2">Results:</h2>
+            <pre className="text-sm text-gray-800 whitespace-pre-wrap">
+              {JSON.stringify(results, null, 2)}
+            </pre>
+          </div>
+        )}
+
       </div>
     </div>
   );
