@@ -40,6 +40,35 @@ const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
     }
 };
 
+// Logic that will upload the bank statement file to backend for processing 
+const handleUpload = async () => {
+    if (!file) return alert("No file has been selected. Please select a file!");
+    setLoading(true);
+    setResults(null);
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+       const res = await fetch("http://127.0.0.1:8000/upload", {
+           method: "POST",
+           body: formData,
+       });
+
+       if (!res.ok) {
+           throw new Error("File upload failed");
+
+           const data = await res.json();
+            setResults(data);
+      } catch (err) {
+          console.error(err);
+          alert("An error occurred while uploading the file. Please try again.");
+      } finally {
+          setLoading(false);
+      }
+    }; 
+
+
 return (
     // Page background + centering
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
