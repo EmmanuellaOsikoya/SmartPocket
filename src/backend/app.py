@@ -55,7 +55,7 @@ def categorise_expense(text: str) -> str:
 # Function that runs FinBERT on each transaction
 def classify_transaction(text: str):
     """Classifies the transaction as income or expense using FinBERT."""
-    inputs = tokenizer(text, return_tensors="pt", truncation=True)
+    inputs = tokenizer(text, return_tensors="pt", truncation=True, max_length=512)
 
     with torch.no_grad():
         outputs = model(**inputs)
@@ -102,6 +102,10 @@ async def upload_file(file: UploadFile = File(...)):
     
     # Processes each transaction line
     for line in lines:
+        # Skip non transaction lines
+        if len(line) < 10:
+            continue
+        
         classification = classify_transaction(line)
 
         if classification == "Income":
