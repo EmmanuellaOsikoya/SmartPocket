@@ -17,6 +17,8 @@ import re
 # Initialises FastAPI
 app = FastAPI()
 
+print
+
 # Allows React frontend to communicate with backend
 app.add_middleware(
     CORSMiddleware,
