@@ -18,13 +18,13 @@ app.add_middleware(
 
 # Keyword-based rule system for expense categorisation
 CATEGORIES = {
-    "Groceries": ["Tesco", "Aldi", "Lidl", "Dunnes", "Dealz", "Grocery", "Supermarket"],
-    "Rent/Ultilites": ["Rent", "Electric", "Gas", "Water", "Eir", "Wifi", "Internet"],
-    "Transport": ["Burkes Bus", "Trnasport for Ireland", "Irish Rail"],
-    "Healthcare": ["Pharmacy", "Doctor", "Hospital", "Clinic"],
-    "Food": ["Restaraunt", "Just Eat", "SuperMacs", "McDonalds"],
-    "Subscriptions": ["Spotify", "Netflix", "Cinema"]
-    
+    "Groceries": ["tesco", "aldi", "lidl", "dunnes", "spar", "asialand"],
+    "Transport": ["burkes bus", "irish rail", "transport for ireland", "tfi"],
+    "Food": ["mcdonald", "just eat", "bds vending"],
+    "Subscriptions": ["spotify", "apple", "gomo"],
+    "Education": ["atlantic technological university"],
+    "Transfers": ["transfer to", "transfer from"],
+    "Pocket": ["pocket withdrawal", "to pocket"],
 }
 
 # Function that catgeorises a single transaction's description using rules
@@ -42,8 +42,9 @@ def categorise_description(text: str):
 
 # Regex pattern to extract transactions from bank PDF text for example 12/11 Tesco -45.00
 transaction_pattern = re.compile(
-    r"(\d{2}/\d{2})\s+(.+?)\s+(-?\d+[\.,]\d{2})"
+    r"(\d{1,2}\s+\w{3}\s+\d{4})\s+(.+?)\s+€?(\d+\.\d{2}|0\.00)\s+€?(\d+\.\d{2}|0\.00)"
 )
+
 # GROUP 1 → date
 # GROUP 2 → description
 # GROUP 3 → amount (positive = income, negative = expense)
@@ -51,24 +52,40 @@ transaction_pattern = re.compile(
 # Function that extracts transactions using the regex pattern above
 def extract_transactions(text: str):
     transactions = []
-    
-    # Iterates over every regex match in the PDF text
+
     for match in transaction_pattern.finditer(text):
-        date, desc, amount = match.groups()
-        
-        # Converts amount to a standard float
-        amount = float(amount.replace(",",""))
-        
+        date, desc, money_out, money_in = match.groups()
+
+        money_out = float(money_out)
+        money_in = float(money_in)
+
+        # Determine actual transaction amount
+        if money_out > 0 and money_in == 0.00:
+            # Pure expense
+            amount = -money_out
+
+        elif money_in > 0 and money_out == 0.00:
+            # Pure income
+            amount = money_in
+
+        elif money_out > 0 and money_in > 0:
+            # Revolut balance change line → actual transaction is money_out (expense)
+            amount = -money_out
+
+        else:
+            # Edge cases
+            continue
+
         transactions.append({
             "date": date,
             "description": desc.strip(),
             "amount": amount
         })
-        
+
     return transactions
 
 # FastAPI endpoint to receive the uploaded PDF file
-app.post("/upload")
+@app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
     """
     Main backend endpoint:
@@ -85,6 +102,7 @@ async def upload_file(file: UploadFile = File(...)):
         with pdfplumber.open(file.file) as pdf:
             # Joins text from all PDF pages
             text = "\n".join(page.extract_text() or "" for page in pdf.pages)
+            print(text)
     except  Exception as e:
         return {"error": f"Could not read PDF: {e}"}
     
