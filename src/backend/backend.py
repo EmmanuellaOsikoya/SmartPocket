@@ -40,4 +40,31 @@ def categorise_description(text: str):
     # Default category if nothing matched
     return "Other"
 
+# Regex pattern to extract transactions from bank PDF text for example 12/11 Tesco -45.00
+transaction_pattern = re.compile(
+    r"(\d{2}/\d{2})\s+(.+?)\s+(-?\d+[\.,]\d{2})"
+)
+# GROUP 1 → date
+# GROUP 2 → description
+# GROUP 3 → amount (positive = income, negative = expense)
+
+# Function that extracts transactions using the regex pattern above
+def extract_transactions(text: str):
+    transactions = []
+    
+    # Iterates over every regex match in the PDF text
+    for match in transaction_pattern.finditer(text):
+        date, desc, amount = match.groups()
+        
+        # Converts amount to a standard float
+        amount = float(amount.replace(",",""))
+        
+        transactions.append({
+            "date": date,
+            "description": desc.strip(),
+            "amount": amount
+        })
+        
+    return transactions
+
 
