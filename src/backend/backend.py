@@ -67,4 +67,50 @@ def extract_transactions(text: str):
         
     return transactions
 
+# FastAPI endpoint to receive the uploaded PDF file
+app.post("/upload")
+async def upload_file(file: UploadFile = File(...)):
+    """
+    Main backend endpoint:
+    - Receives a PDF file from the React frontend
+    - Extracts all text using pdfplumber
+    - Uses regex to detect transactions
+    - Splits them into income vs outcome
+    - Categorises expenses using rules
+    - Returns structured JSON results
+    """
+    
+    # Extracts the PDF text
+    try:
+        with pdfplumber.open(file.file) as pdf:
+            # Joins text from all PDF pages
+            text = "\n".join(page.extract_text() or "" for page in pdf.pages)
+    except  Exception as e:
+        return {"error": f"Could not read PDF: {e}"}
+    
+    # Extract transactions using regex
+    transactions = extract_transactions(text)
+    
+    # Structure that will be returned to frontend
+    results = {
+        "income": [],
+        "outcome": []
+    }
+    
+    # Classifies income/expense + Categorise
+    for tx in transactions:
+        amount = tx["amount"]
+        
+        if amount > 0:
+            # Positive amounts = income
+            results["income"].append(tx)
+            
+        else:
+            category = categorise_description(tx["description"])
+            tx["category"] = category
+            results["outcome"].append(tx) 
+        
+        
+    return results          
+
 
