@@ -80,22 +80,31 @@ const handleUpload = async () => {
       } finally {
           setLoading(false);
       }
-    }; 
+    };
+    
+    //The total income and the total outcome
+        // Calculate total income
+        const totalIncome = results?.income?.reduce(
+        (sum: number, tx: any) => sum + tx.amount,
+        0
+        );
+
+        // Calculate total outcome (absolute values)
+        const totalOutcome = results?.outcome?.reduce(
+        (sum: number, tx: any) => sum + Math.abs(tx.amount),
+        0
+        );
+
 
 
 return (
-    // Page background + centering
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
-
-      {/* Main content box */}
-      <div className="max-w-lg w-full bg-white shadow-lg rounded-lg p-8">
-
-        {/* Page title */}
+      <div className="max-w-2xl w-full bg-white shadow-lg rounded-lg p-8">
         <h1 className="text-2xl font-bold mb-4 text-center">
           Expense Categorisation
         </h1>
 
-        {/* Drag-and-drop zone */}
+        {/* DRAG AND DROP AREA */}
         <div
           className={`
             border-2 border-dashed rounded-lg p-10 text-center cursor-pointer transition
@@ -105,8 +114,6 @@ return (
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
         >
-
-          {/* Hidden file input (activated when clicking the label) */}
           <input
             type="file"
             id="fileUpload"
@@ -114,14 +121,13 @@ return (
             className="hidden"
           />
 
-          {/* Click-to-select label */}
           <label htmlFor="fileUpload" className="cursor-pointer">
             <p className="text-gray-700">Drag and drop your file here</p>
             <p className="text-gray-500 text-sm">or click to select</p>
           </label>
         </div>
 
-        {/* Display selected file information */}
+        {/* SELECTED FILE */}
         {file && (
           <div className="mt-4 p-4 bg-gray-100 rounded">
             <p className="font-medium">Selected File:</p>
@@ -129,6 +135,7 @@ return (
           </div>
         )}
 
+        {/* UPLOAD BUTTON */}
         <button
           onClick={handleUpload}
           disabled={loading}
@@ -137,64 +144,94 @@ return (
           {loading ? "Processing..." : "Upload & Categorise"}
         </button>
 
+        {/* RESULTS SECTION */}
         {results && (
-  <div className="mt-8 space-y-6">
+          <div className="mt-8 space-y-6">
 
-    {/* INCOME CARD */}
-    <div className="bg-white shadow-md border rounded-lg p-6">
-      <h2 className="text-xl font-semibold text-green-700 mb-4">Income</h2>
+            {/* ---------------- INCOME CARD ---------------- */}
+            <div className="bg-white shadow-md border rounded-lg p-6">
+              <h2 className="text-xl font-semibold text-green-700 mb-4">
+                Income
+              </h2>
 
-      {results.income.length === 0 ? (
-        <p className="text-gray-500">No income transactions found.</p>
-      ) : (
-        <ul className="divide-y divide-gray-200">
-          {results.income.map((tx: any, idx: number) => (
-            <li key={idx} className="py-3 flex justify-between items-center">
-              <div>
-                <p className="font-medium text-gray-700">{tx.description}</p>
-                <p className="text-sm text-gray-500">{tx.date}</p>
-              </div>
-              <p className="text-green-600 font-semibold">+€{tx.amount.toFixed(2)}</p>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+              {results.income.length === 0 ? (
+                <p className="text-gray-500">No income transactions found.</p>
+              ) : (
+                <>
+                  <ul className="divide-y divide-gray-200">
+                    {results.income.map((tx: any, idx: number) => (
+                      <li
+                        key={idx}
+                        className="py-3 flex justify-between items-center"
+                      >
+                        <div>
+                          <p className="font-medium text-gray-700">
+                            {tx.description}
+                          </p>
+                          <p className="text-sm text-gray-500">{tx.date}</p>
+                        </div>
+                        <p className="text-green-600 font-semibold">
+                          +€{tx.amount.toFixed(2)}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
 
-    {/* OUTCOME CARD */}
-    <div className="bg-white shadow-md border rounded-lg p-6">
-      <h2 className="text-xl font-semibold text-red-700 mb-4">Outcome</h2>
+                  {/* TOTAL INCOME */}
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <p className="text-lg font-semibold text-green-700">
+                      Total Income: €{totalIncome.toFixed(2)}
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
 
-      {results.outcome.length === 0 ? (
-        <p className="text-gray-500">No outgoing transactions found.</p>
-      ) : (
-        <ul className="divide-y divide-gray-200">
-          {results.outcome.map((tx: any, idx: number) => (
-            <li key={idx} className="py-3">
-              <div className="flex justify-between items-center">
-                <div>
-                  <p className="font-medium text-gray-700">{tx.description}</p>
-                  <p className="text-sm text-gray-500">{tx.date}</p>
-                </div>
-                <p className="text-red-600 font-semibold">-€{Math.abs(tx.amount).toFixed(2)}</p>
-              </div>
+            {/* ---------------- OUTCOME CARD ---------------- */}
+            <div className="bg-white shadow-md border rounded-lg p-6">
+              <h2 className="text-xl font-semibold text-red-700 mb-4">
+                Outcome
+              </h2>
 
-              {/* Category Badge */}
-              <span
-                className="inline-block mt-2 px-3 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full"
-              >
-                {tx.category}
-              </span>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+              {results.outcome.length === 0 ? (
+                <p className="text-gray-500">No outgoing transactions found.</p>
+              ) : (
+                <>
+                  <ul className="divide-y divide-gray-200">
+                    {results.outcome.map((tx: any, idx: number) => (
+                      <li key={idx} className="py-3">
+                        <div className="flex justify-between items-center">
+                          <div>
+                            <p className="font-medium text-gray-700">
+                              {tx.description}
+                            </p>
+                            <p className="text-sm text-gray-500">{tx.date}</p>
+                          </div>
+                          <p className="text-red-600 font-semibold">
+                            -€{Math.abs(tx.amount).toFixed(2)}
+                          </p>
+                        </div>
 
-  </div>
-)}
+                        {/* Category Badge */}
+                        <span className="inline-block mt-2 px-3 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
+                          {tx.category}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
 
+                  {/* TOTAL OUTCOME */}
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <p className="text-lg font-semibold text-red-700">
+                      Total Outcome: €{totalOutcome.toFixed(2)}
+                    </p>
+                  </div>
+                </>
+              )}
+            </div>
 
+          </div>
+        )}
       </div>
     </div>
   );

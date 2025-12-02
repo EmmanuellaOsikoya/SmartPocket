@@ -136,8 +136,8 @@ async def upload_file(file: UploadFile = File(...)):
         else:
             category = categorise_description(tx["description"])
             tx["category"] = category
-            results["outcome"].append(tx) 
-        
+            results["outcome"].append(tx)
+
         
     return results          
 
