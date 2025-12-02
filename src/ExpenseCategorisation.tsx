@@ -138,13 +138,62 @@ return (
         </button>
 
         {results && (
-          <div className="mt-6 p-4 bg-green-50 border rounded">
-            <h2 className="font-semibold mb-2">Results:</h2>
-            <pre className="text-sm text-gray-800 whitespace-pre-wrap">
-              {JSON.stringify(results, null, 2)}
-            </pre>
-          </div>
-        )}
+  <div className="mt-8 space-y-6">
+
+    {/* INCOME CARD */}
+    <div className="bg-white shadow-md border rounded-lg p-6">
+      <h2 className="text-xl font-semibold text-green-700 mb-4">Income</h2>
+
+      {results.income.length === 0 ? (
+        <p className="text-gray-500">No income transactions found.</p>
+      ) : (
+        <ul className="divide-y divide-gray-200">
+          {results.income.map((tx: any, idx: number) => (
+            <li key={idx} className="py-3 flex justify-between items-center">
+              <div>
+                <p className="font-medium text-gray-700">{tx.description}</p>
+                <p className="text-sm text-gray-500">{tx.date}</p>
+              </div>
+              <p className="text-green-600 font-semibold">+€{tx.amount.toFixed(2)}</p>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+
+    {/* OUTCOME CARD */}
+    <div className="bg-white shadow-md border rounded-lg p-6">
+      <h2 className="text-xl font-semibold text-red-700 mb-4">Outcome</h2>
+
+      {results.outcome.length === 0 ? (
+        <p className="text-gray-500">No outgoing transactions found.</p>
+      ) : (
+        <ul className="divide-y divide-gray-200">
+          {results.outcome.map((tx: any, idx: number) => (
+            <li key={idx} className="py-3">
+              <div className="flex justify-between items-center">
+                <div>
+                  <p className="font-medium text-gray-700">{tx.description}</p>
+                  <p className="text-sm text-gray-500">{tx.date}</p>
+                </div>
+                <p className="text-red-600 font-semibold">-€{Math.abs(tx.amount).toFixed(2)}</p>
+              </div>
+
+              {/* Category Badge */}
+              <span
+                className="inline-block mt-2 px-3 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full"
+              >
+                {tx.category}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+
+  </div>
+)}
+
 
       </div>
     </div>
