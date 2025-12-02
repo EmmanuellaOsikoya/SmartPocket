@@ -135,7 +135,7 @@ const COLORS = [
 
 return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
-      <div className="max-w-2xl w-full bg-white shadow-lg rounded-lg p-8">
+      <div className="max-w-7xl w-full bg-white shadow-lg rounded-lg p-10">
         <h1 className="text-2xl font-bold mb-4 text-center">
           Expense Categorisation
         </h1>
@@ -182,144 +182,137 @@ return (
 
         {/* RESULTS SECTION */}
         {results && (
-          <div className="mt-8 space-y-6">
+  <div className="mt-10 grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-            {/* ---------------- INCOME CARD ---------------- */}
-            <div className="bg-white shadow-md border rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-green-700 mb-4">
-                Income
-              </h2>
+    {/* ---------------- LEFT COLUMN: INCOME ---------------- */}
+    <div className="bg-white shadow-md border rounded-lg p-6">
+      <h2 className="text-xl font-semibold text-green-700 mb-4">Income</h2>
 
-              {results.income.length === 0 ? (
-                <p className="text-gray-500">No income transactions found.</p>
-              ) : (
-                <>
-                  <ul className="divide-y divide-gray-200">
-                    {results.income.map((tx: any, idx: number) => (
-                      <li
-                        key={idx}
-                        className="py-3 flex justify-between items-center"
-                      >
-                        <div>
-                          <p className="font-medium text-gray-700">
-                            {tx.description}
-                          </p>
-                          <p className="text-sm text-gray-500">{tx.date}</p>
-                        </div>
-                        <p className="text-green-600 font-semibold">
-                          +€{tx.amount.toFixed(2)}
-                        </p>
-                      </li>
-                    ))}
-                  </ul>
+      {results.income.length === 0 ? (
+        <p className="text-gray-500">No income transactions found.</p>
+      ) : (
+        <>
+          <ul className="divide-y divide-gray-200">
+            {results.income.map((tx: any, idx: number) => (
+              <li key={idx} className="py-3 flex justify-between items-center">
+                <div>
+                  <p className="font-medium text-gray-700">{tx.description}</p>
+                  <p className="text-sm text-gray-500">{tx.date}</p>
+                </div>
+                <p className="text-green-600 font-semibold">
+                  +€{tx.amount.toFixed(2)}
+                </p>
+              </li>
+            ))}
+          </ul>
 
-                  {/* TOTAL INCOME */}
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <p className="text-lg font-semibold text-green-700">
-                      Total Income: €{totalIncome.toFixed(2)}
-                    </p>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* ---------------- OUTCOME CARD ---------------- */}
-            <div className="bg-white shadow-md border rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-red-700 mb-4">
-                Outcome
-              </h2>
-
-              {results.outcome.length === 0 ? (
-                <p className="text-gray-500">No outgoing transactions found.</p>
-              ) : (
-                <>
-                  <ul className="divide-y divide-gray-200">
-                    {results.outcome.map((tx: any, idx: number) => (
-                      <li key={idx} className="py-3">
-                        <div className="flex justify-between items-center">
-                          <div>
-                            <p className="font-medium text-gray-700">
-                              {tx.description}
-                            </p>
-                            <p className="text-sm text-gray-500">{tx.date}</p>
-                          </div>
-                          <p className="text-red-600 font-semibold">
-                            -€{Math.abs(tx.amount).toFixed(2)}
-                          </p>
-                        </div>
-
-                        {/* Category Badge */}
-                        <span className="inline-block mt-2 px-3 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
-                          {tx.category}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-
-                  {/* TOTAL OUTCOME */}
-                  <div className="mt-4 pt-4 border-t border-gray-200">
-                    <p className="text-lg font-semibold text-red-700">
-                      Total Outcome: €{totalOutcome.toFixed(2)}
-                    </p>
-                  </div>
-                </>
-              )}
-            </div>
-
-            {/* ---------------- NET BALANCE CARD ---------------- */}
-<div className="bg-white shadow-md border rounded-lg p-6">
-  <h2 className="text-xl font-semibold text-gray-800 mb-4">Net Balance</h2>
-
-  <p className={`text-2xl font-bold ${
-    netBalance >= 0 ? "text-green-600" : "text-red-600"
-  }`}>
-    €{netBalance.toFixed(2)}
-  </p>
-
-  <p className="mt-2 text-gray-500 text-sm">
-    {netBalance >= 0
-      ? "Great job! You earned more than you spent this month."
-      : "Warning: You spent more than you earned this month."}
-  </p>
-</div>
-
-
-            {/* PIE CHART */}
-<div className="mt-8">
-  <h3 className="text-lg font-semibold text-gray-700 mb-2 text-center">
-    Spending Breakdown by Category
-  </h3>
-
-  <div className="w-full h-64">
-    <ResponsiveContainer>
-      <PieChart>
-        <Pie
-          data={categoryData}
-          cx="50%"
-          cy="50%"
-          labelLine={false}
-          outerRadius={90}
-          fill="#8884d8"
-          dataKey="value"
-          label={({ name, percent = 0 }) =>
-            `${name}: ${(percent * 100).toFixed(0)}%`
-          }
-        >
-          {categoryData.map((entry, index) => (
-            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-          ))}
-        </Pie>
-
-        <Tooltip />
-        <Legend />
-      </PieChart>
-    </ResponsiveContainer>
-  </div>
-</div>
-
-
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <p className="text-lg font-semibold text-green-700">
+              Total Income: €{totalIncome.toFixed(2)}
+            </p>
           </div>
-        )}
+        </>
+      )}
+    </div>
+
+    {/* ---------------- MIDDLE COLUMN: OUTCOME ---------------- */}
+    <div className="bg-white shadow-md border rounded-lg p-6">
+      <h2 className="text-xl font-semibold text-red-700 mb-4">Outcome</h2>
+
+      {results.outcome.length === 0 ? (
+        <p className="text-gray-500">No outgoing transactions found.</p>
+      ) : (
+        <>
+          <ul className="divide-y divide-gray-200">
+            {results.outcome.map((tx: any, idx: number) => (
+              <li key={idx} className="py-3">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="font-medium text-gray-700">{tx.description}</p>
+                    <p className="text-sm text-gray-500">{tx.date}</p>
+                  </div>
+                  <p className="text-red-600 font-semibold">
+                    -€{Math.abs(tx.amount).toFixed(2)}
+                  </p>
+                </div>
+
+                <span className="inline-block mt-2 px-3 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
+                  {tx.category}
+                </span>
+              </li>
+            ))}
+          </ul>
+
+          <div className="mt-4 pt-4 border-t border-gray-200">
+            <p className="text-lg font-semibold text-red-700">
+              Total Outcome: €{totalOutcome.toFixed(2)}
+            </p>
+          </div>
+        </>
+      )}
+    </div>
+
+    {/* ---------------- RIGHT COLUMN: NET BALANCE + PIE ---------------- */}
+    <div className="flex flex-col gap-6">
+
+      {/* NET BALANCE */}
+      <div className="bg-white shadow-md border rounded-lg p-6">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">Net Balance</h2>
+
+        <p
+          className={`text-2xl font-bold ${
+            netBalance >= 0 ? "text-green-600" : "text-red-600"
+          }`}
+        >
+          €{netBalance.toFixed(2)}
+        </p>
+
+        <p className="mt-2 text-gray-500 text-sm">
+          {netBalance >= 0
+            ? "Great job! You earned more than you spent this month."
+            : "Warning: You spent more than you earned this month."}
+        </p>
+      </div>
+
+      {/* PIE CHART */}
+      <div className="bg-white shadow-md border rounded-lg p-6">
+        <h3 className="text-lg font-semibold text-gray-700 mb-2 text-center">
+          Spending Breakdown
+        </h3>
+
+        <div className="w-full h-80">
+          <ResponsiveContainer>
+            <PieChart>
+              <Pie
+                data={categoryData}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                outerRadius={90}
+                fill="#8884d8"
+                dataKey="value"
+                label={({ name, percent = 0 }) =>
+                  `${name}: ${(percent * 100).toFixed(0)}%`
+                }
+              >
+                {categoryData.map((entry, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
+                ))}
+              </Pie>
+
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+    </div>
+  </div>
+)}
+
       </div>
     </div>
   );
