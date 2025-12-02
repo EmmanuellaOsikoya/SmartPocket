@@ -58,27 +58,37 @@ def extract_transactions(text: str):
 
         money_out = float(money_out)
         money_in = float(money_in)
+        desc_lower = desc.lower()
 
-        # Determine actual transaction amount
-        if money_out > 0 and money_in == 0.00:
-            # Pure expense
-            amount = -money_out
-
-        elif money_in > 0 and money_out == 0.00:
-            # Pure income
-            amount = money_in
-
-        elif money_out > 0 and money_in > 0:
-            # Revolut balance change line → actual transaction is money_out (expense)
-            amount = -money_out
-
-        else:
-            # Edge cases
+        # Transfers from people should be classed as income
+        if "transfer from" in desc_lower:
+            amount = abs(money_out) # Revolut will print the actual transfer amount here
+            transactions.append({
+                "date": date,
+                "description": desc,
+                "amount": amount # classed as positive
+            })
             continue
+        
+        # Transfers to people should be classed as outcome
+        if "transfer from" in desc_lower:
+            amount = -abs(money_out) # Revolut will print the actual transfer amount here
+            transactions.append({
+                "date": date,
+                "description": desc,
+                "amount": amount # classed as positive
+            })
+            continue
+        
+        # Determine actual transaction amount for regular transactions
+        if money_out > 0:
+            amount = -money_out
+        else:
+            amount = money_in  # true income (rare but possible)
 
         transactions.append({
             "date": date,
-            "description": desc.strip(),
+            "description": desc,
             "amount": amount
         })
 
