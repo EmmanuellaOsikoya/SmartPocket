@@ -96,6 +96,9 @@ const handleUpload = async () => {
         0
         );
 
+        //Calculates the net balance
+        const netBalance = totalIncome - totalOutcome;
+
 // This sections is for categorising expenses into percentages in pie charts
 let categoryData: any[] = [];
 
@@ -262,6 +265,24 @@ return (
                 </>
               )}
             </div>
+
+            {/* ---------------- NET BALANCE CARD ---------------- */}
+<div className="bg-white shadow-md border rounded-lg p-6">
+  <h2 className="text-xl font-semibold text-gray-800 mb-4">Net Balance</h2>
+
+  <p className={`text-2xl font-bold ${
+    netBalance >= 0 ? "text-green-600" : "text-red-600"
+  }`}>
+    €{netBalance.toFixed(2)}
+  </p>
+
+  <p className="mt-2 text-gray-500 text-sm">
+    {netBalance >= 0
+      ? "Great job! You earned more than you spent this month."
+      : "Warning: You spent more than you earned this month."}
+  </p>
+</div>
+
 
             {/* PIE CHART */}
 <div className="mt-8">
