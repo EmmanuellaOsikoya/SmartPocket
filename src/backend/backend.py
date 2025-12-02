@@ -24,7 +24,6 @@ CATEGORIES = {
     "Subscriptions": ["spotify", "apple", "gomo"],
     "Education": ["atlantic technological university"],
     "Transfers": ["transfer to", "transfer from"],
-    "Pocket": ["pocket withdrawal", "to pocket"],
 }
 
 # Function that catgeorises a single transaction's description using rules
@@ -59,6 +58,20 @@ def extract_transactions(text: str):
         money_out = float(money_out)
         money_in = float(money_in)
         desc_lower = desc.lower()
+        
+        if "pocket" in desc_lower:
+            continue    
+        
+        # Transfers via apple pay are now classed as income
+        if "apple pay top-up" in desc_lower or "apple pay top up" in desc_lower:
+            # money_out contains the real top-up amount
+            amount = money_out # classed as positive income
+            transactions.append({
+                "date": date,
+                "description": desc,
+                "amount": amount
+            })
+            continue
 
         # Transfers from people should be classed as income
         if "transfer from" in desc_lower:
