@@ -4,6 +4,7 @@
 
 // imports needed for this file
 import React, { useState, DragEvent, ChangeEvent} from 'react';
+import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
 const ExpenseCategorisation: React.FC = () => {
     const [file, setFile] = useState<File | null>(null);
@@ -95,7 +96,39 @@ const handleUpload = async () => {
         0
         );
 
+// This sections is for categorising expenses into percentages in pie charts
+let categoryData: any[] = [];
 
+if (results?.outcome) {
+  // Create a map of category → total amount
+  const categoryTotals: Record<string, number> = {};
+
+  results.outcome.forEach((tx: any) => {
+    const cat = tx.category || "Other";
+    const amount = Math.abs(tx.amount);
+
+    if (!categoryTotals[cat]) {
+      categoryTotals[cat] = 0;
+    }
+    categoryTotals[cat] += amount;
+  });
+
+  // Convert map → array for Recharts
+  categoryData = Object.entries(categoryTotals).map(([category, total]) => ({
+    name: category,
+    value: total,
+  }));
+}
+
+const COLORS = [
+  "#2563eb", // blue
+  "#dc2626", // red
+  "#16a34a", // green
+  "#d97706", // orange
+  "#9333ea", // purple
+  "#0d9488", // teal
+  "#be185d", // pink
+];
 
 return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
@@ -229,6 +262,40 @@ return (
                 </>
               )}
             </div>
+
+            {/* PIE CHART */}
+<div className="mt-8">
+  <h3 className="text-lg font-semibold text-gray-700 mb-2 text-center">
+    Spending Breakdown by Category
+  </h3>
+
+  <div className="w-full h-64">
+    <ResponsiveContainer>
+      <PieChart>
+        <Pie
+          data={categoryData}
+          cx="50%"
+          cy="50%"
+          labelLine={false}
+          outerRadius={90}
+          fill="#8884d8"
+          dataKey="value"
+          label={({ name, percent = 0 }) =>
+            `${name}: ${(percent * 100).toFixed(0)}%`
+          }
+        >
+          {categoryData.map((entry, index) => (
+            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+          ))}
+        </Pie>
+
+        <Tooltip />
+        <Legend />
+      </PieChart>
+    </ResponsiveContainer>
+  </div>
+</div>
+
 
           </div>
         )}
