@@ -292,6 +292,15 @@ return (
             </div>
           </div>
         )}
+        {/* SET BUDGET BUTTON */}
+        <div className="mt-8 flex justify-end">
+          <button
+            onClick={() => window.location.href = "/set-budget"}
+            className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition"
+          >
+            Set Budget for Next Month
+          </button>
+        </div>
       </div>
     </div>
   );

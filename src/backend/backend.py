@@ -233,6 +233,14 @@ def get_dashboard(id: str):
         raise HTTPException(status_code=404, detail="Dashboard not found")
     return data  
 
+# endpoint to save budget data
+@app.post("/save-budget")
+def save_budget(budget: dict):
+    budget["timestamp"] = datetime.now().isoformat()
+    db.budgets.insert_one(budget)
+    return {"status": "ok"}
+
+
         
 
 

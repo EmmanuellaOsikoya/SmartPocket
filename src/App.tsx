@@ -6,6 +6,7 @@ import ExpenseCategorisation from './ExpenseCategorisation';
 import { Routes, Route } from 'react-router-dom';
 import TransactionHistory from './TrsnsactionHistory';
 import DashboardDetails from './DashboardDetails';
+import SetBudget from './SetBudget';
 
 function App() {
   return (
@@ -16,6 +17,7 @@ function App() {
       <Route path="/expense-categorisation" element={<ExpenseCategorisation />} />
       <Route path ="/history" element={<TransactionHistory />} />
       <Route path="/history/:id" element={<DashboardDetails />} />
+      <Route path="/set-budget" element={<SetBudget />} />
     </Routes>
   );
 }
