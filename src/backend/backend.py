@@ -240,6 +240,38 @@ def save_budget(budget: dict):
     db.budgets.insert_one(budget)
     return {"status": "ok"}
 
+@app.get("/progress/{timestamp}")
+def get_progress(timestamp: str):
+    # Get the dashboard for that month
+    month_record = dashboards.find_one({"timestamp": timestamp})
+    if not month_record:
+        raise HTTPException(status_code=404, detail="Dashboard not found")
+
+    # Get saved budget
+    budget_record = budgets.find_one({}, sort=[("_id", -1)])  # most recent budget
+    if not budget_record:
+        raise HTTPException(status_code=404, detail="No budget saved")
+
+    # Calculate totals
+    result = {
+        "spent": month_record["total_outcome"],
+        "budget": budget_record["totalBudget"],
+        "categories": []
+    }
+
+    for cat, spent in month_record["categories"].items():
+        budget_for_cat = budget_record["categories"].get(cat, 0)
+
+        result["categories"].append({
+            "category": cat,
+            "spent": spent,
+            "budget": budget_for_cat,
+            "difference": spent - budget_for_cat
+        })
+
+    return result
+
+
 
         
 

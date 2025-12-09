@@ -301,6 +301,16 @@ return (
             Set Budget for Next Month
           </button>
         </div>
+
+        {/* VIEW PROGRESS BUTTON */}
+      <div className="mt-8 flex justify-center">
+        <button
+          onClick={() => window.location.href = "/budget-progress"}
+          className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition"
+        >
+          View Budget Progress
+        </button>
+      </div>
       </div>
     </div>
   );
