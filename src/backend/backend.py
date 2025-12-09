@@ -7,6 +7,7 @@ from pymongo import MongoClient
 from datetime import datetime
 from fastapi import HTTPException
 from bson.objectid import ObjectId
+from fastapi import Query
 
 # MongoDB setup so that the uploaded dashboards can be stored
 MONGO_URI = "mongodb+srv://ellaosikoya:smartpocket123@transactionhistory.euvjjnf.mongodb.net/"
@@ -206,7 +207,19 @@ async def upload_file(file: UploadFile = File(...)):
 
 # history endpoint to retrieve all stored dashboards
 @app.get("/history")
-def get_history():
+def get_history(month: int | None = Query(None), year: int | None = Query(None)):
+    filter_query = {}
+
+    # If a month + year were passed
+    if month and year:
+        # Convert month number into 2 digits (01 → 12)
+        month_str = f"{month:02d}"
+        year_str = str(year)
+
+        # Timestamp looks like: 2025-12-09T16:49:41
+        # So we filter by prefix "2025-12"
+        filter_query["timestamp"] = {"$regex": f"^{year_str}-{month_str}"}
+    
     records = list(dashboards.find({}))
     for r in records:
         r["_id"] = str(r["_id"])

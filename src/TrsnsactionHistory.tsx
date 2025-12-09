@@ -6,22 +6,31 @@ const TransactionHistory: React.FC = () => {
 
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [month, setMonth] = useState<number | "">("");
+  const [year, setYear] = useState<number | "">("");
+
+  const fetchHistory = () => {
+  setLoading(true);
+
+  let url = "http://127.0.0.1:8000/history";
+
+  const params = [];
+  if (month) params.push(`month=${month}`);
+  if (year) params.push(`year=${year}`);
+
+  if (params.length > 0) url += "?" + params.join("&");
+
+  fetch(url)
+    .then((res) => res.json())
+    .then((data) => setHistory(data.reverse()))
+    .finally(() => setLoading(false));
+};
+
 
   useEffect(() => {
-    fetch("http://127.0.0.1:8000/history")
-      .then((res) => res.json())
-      .then((data) => {
-        // Sort newest first
-        const sorted = data.reverse();
-        setHistory(sorted);
-      })
-      .catch((err) => {
-        console.error("Error fetching history:", err);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
+  fetchHistory();
+}, []);
+
 
   if (loading) {
     return (
@@ -37,15 +46,51 @@ const TransactionHistory: React.FC = () => {
         Past Dashboards
       </h1>
 
+      {/* FILTER BAR */}
+      <div className="flex flex-wrap gap-4 mb-8 justify-center">
+        
+        {/* Month dropdown */}
+        <select
+          value={month}
+          onChange={(e) => setMonth(Number(e.target.value))}
+          className="border rounded px-4 py-2"
+        >
+          <option value="">All Months</option>
+          {[...Array(12)].map((_, i) => (
+            <option key={i + 1} value={i + 1}>
+              {new Date(2000, i).toLocaleString("default", { month: "long" })}
+            </option>
+          ))}
+        </select>
+
+        {/* Year input */}
+        <input
+          type="number"
+          placeholder="Year"
+          value={year}
+          onChange={(e) => setYear(Number(e.target.value))}
+          className="border rounded px-4 py-2 w-28"
+        />
+
+        {/* Apply filter */}
+        <button
+          onClick={fetchHistory}
+          className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600"
+        >
+          Apply Filter
+        </button>
+      </div>
+
+      {/* RESULTS */}
       {history.length === 0 ? (
         <p className="text-center text-gray-500">
-          No saved dashboards found.
+          No dashboards found for selected period.
         </p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {history.map((item, index) => (
+          {history.map((item) => (
             <div
-              key={item._id}
+              key={item.timestamp}
               className="bg-white shadow-lg rounded-xl p-6 hover:shadow-xl transition"
             >
               {/* Timestamp */}
@@ -56,9 +101,7 @@ const TransactionHistory: React.FC = () => {
               {/* NET BALANCE */}
               <p
                 className={`text-xl font-bold mb-2 ${
-                  item.net_balance >= 0
-                    ? "text-green-600"
-                    : "text-red-600"
+                  item.net_balance >= 0 ? "text-green-600" : "text-red-600"
                 }`}
               >
                 Net Balance: €{item.net_balance.toFixed(2)}
@@ -78,7 +121,7 @@ const TransactionHistory: React.FC = () => {
               <button
                 onClick={() => navigate(`/history/${item._id}`)}
                 className="mt-auto bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
->
+              >
                 View Details
               </button>
             </div>
@@ -88,5 +131,6 @@ const TransactionHistory: React.FC = () => {
     </div>
   );
 };
+
 
 export default TransactionHistory;

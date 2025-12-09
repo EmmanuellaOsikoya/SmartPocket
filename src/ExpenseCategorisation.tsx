@@ -6,6 +6,17 @@
 import React, { useState, DragEvent, ChangeEvent} from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
+// Colours for categories and pie chart slices
+const CATEGORY_COLORS: Record<string, string> = {
+  Groceries: "#2563eb",
+  Transport: "#dc2626",
+  Food: "#16a34a",
+  Subscriptions: "#d97706",
+  Education: "#9333ea",
+  Transfers: "#0d9488",
+  Other: "#be185d",
+};
+
 const ExpenseCategorisation: React.FC = () => {
     const [file, setFile] = useState<File | null>(null);
 
@@ -123,16 +134,6 @@ if (results?.outcome) {
   }));
 }
 
-const COLORS = [
-  "#2563eb", // blue
-  "#dc2626", // red
-  "#16a34a", // green
-  "#d97706", // orange
-  "#9333ea", // purple
-  "#0d9488", // teal
-  "#be185d", // pink
-];
-
 return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 p-6">
       <div className="max-w-7xl w-full bg-white shadow-lg rounded-lg p-10">
@@ -140,12 +141,11 @@ return (
           Expense Categorisation
         </h1>
 
-        {/* DRAG AND DROP AREA */}
+        {/* UPLOAD AREA */}
         <div
-          className={`
-            border-2 border-dashed rounded-lg p-10 text-center cursor-pointer transition
-            ${dragActive ? "border-blue-500 bg-blue-50" : "border-gray-400"}
-          `}
+          className={`border-2 border-dashed rounded-lg p-10 text-center cursor-pointer transition ${
+            dragActive ? "border-blue-500 bg-blue-50" : "border-gray-400"
+          }`}
           onDragOver={handleDrag}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
@@ -156,14 +156,12 @@ return (
             onChange={handleFileSelect}
             className="hidden"
           />
-
           <label htmlFor="fileUpload" className="cursor-pointer">
             <p className="text-gray-700">Drag and drop your file here</p>
             <p className="text-gray-500 text-sm">or click to select</p>
           </label>
         </div>
 
-        {/* SELECTED FILE */}
         {file && (
           <div className="mt-4 p-4 bg-gray-100 rounded">
             <p className="font-medium">Selected File:</p>
@@ -171,7 +169,6 @@ return (
           </div>
         )}
 
-        {/* UPLOAD BUTTON */}
         <button
           onClick={handleUpload}
           disabled={loading}
@@ -180,142 +177,125 @@ return (
           {loading ? "Processing..." : "Upload & Categorise"}
         </button>
 
-        {/* RESULTS SECTION */}
+        {/* RESULTS */}
         {results && (
-  <div className="mt-10 grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="mt-10 grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* INCOME */}
+            <div className="bg-white shadow-md border rounded-lg p-6">
+              <h2 className="text-xl font-semibold text-green-700 mb-4">
+                Income
+              </h2>
 
-    {/* ---------------- LEFT COLUMN: INCOME ---------------- */}
-    <div className="bg-white shadow-md border rounded-lg p-6">
-      <h2 className="text-xl font-semibold text-green-700 mb-4">Income</h2>
-
-      {results.income.length === 0 ? (
-        <p className="text-gray-500">No income transactions found.</p>
-      ) : (
-        <>
-          <ul className="divide-y divide-gray-200">
-            {results.income.map((tx: any, idx: number) => (
-              <li key={idx} className="py-3 flex justify-between items-center">
-                <div>
-                  <p className="font-medium text-gray-700">{tx.description}</p>
+              {results.income.map((tx: any, idx: number) => (
+                <div key={idx} className="border-b py-2">
+                  <div className="flex justify-between">
+                    <span>{tx.description}</span>
+                    <span className="text-green-600 font-semibold">
+                      +€{tx.amount.toFixed(2)}
+                    </span>
+                  </div>
                   <p className="text-sm text-gray-500">{tx.date}</p>
                 </div>
-                <p className="text-green-600 font-semibold">
-                  +€{tx.amount.toFixed(2)}
-                </p>
-              </li>
-            ))}
-          </ul>
+              ))}
 
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <p className="text-lg font-semibold text-green-700">
-              Total Income: €{totalIncome.toFixed(2)}
-            </p>
-          </div>
-        </>
-      )}
-    </div>
+              <p className="font-bold text-green-700 mt-4">
+                Total Income: €{totalIncome.toFixed(2)}
+              </p>
+            </div>
 
-    {/* ---------------- MIDDLE COLUMN: OUTCOME ---------------- */}
-    <div className="bg-white shadow-md border rounded-lg p-6">
-      <h2 className="text-xl font-semibold text-red-700 mb-4">Outcome</h2>
+            {/* OUTCOME */}
+            <div className="bg-white shadow-md border rounded-lg p-6">
+              <h2 className="text-xl font-semibold text-red-700 mb-4">
+                Outcome
+              </h2>
 
-      {results.outcome.length === 0 ? (
-        <p className="text-gray-500">No outgoing transactions found.</p>
-      ) : (
-        <>
-          <ul className="divide-y divide-gray-200">
-            {results.outcome.map((tx: any, idx: number) => (
-              <li key={idx} className="py-3">
-                <div className="flex justify-between items-center">
-                  <div>
-                    <p className="font-medium text-gray-700">{tx.description}</p>
-                    <p className="text-sm text-gray-500">{tx.date}</p>
+              {results.outcome.map((tx: any, idx: number) => (
+                <div key={idx} className="border-b py-2">
+                  <div className="flex justify-between">
+                    <span>{tx.description}</span>
+                    <span className="text-red-600 font-semibold">
+                      -€{Math.abs(tx.amount).toFixed(2)}
+                    </span>
                   </div>
-                  <p className="text-red-600 font-semibold">
-                    -€{Math.abs(tx.amount).toFixed(2)}
-                  </p>
+
+                  {/* Category badge */}
+                  <span
+                    className="inline-block mt-2 px-3 py-1 text-xs font-semibold rounded-full"
+                    style={{
+                      backgroundColor:
+                        CATEGORY_COLORS[tx.category] + "22",
+                      color: CATEGORY_COLORS[tx.category],
+                    }}
+                  >
+                    {tx.category}
+                  </span>
                 </div>
+              ))}
 
-                <span className="inline-block mt-2 px-3 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded-full">
-                  {tx.category}
-                </span>
-              </li>
-            ))}
-          </ul>
+              <p className="font-bold text-red-700 mt-4">
+                Total Outcome: €{totalOutcome.toFixed(2)}
+              </p>
+            </div>
 
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <p className="text-lg font-semibold text-red-700">
-              Total Outcome: €{totalOutcome.toFixed(2)}
-            </p>
+            {/* NET + PIE */}
+            <div className="flex flex-col gap-6">
+              <div className="bg-white shadow-md border rounded-lg p-6">
+                <h2 className="text-xl font-semibold mb-2">Net Balance</h2>
+                <p
+                  className={`text-3xl font-bold ${
+                    netBalance >= 0 ? "text-green-600" : "text-red-600"
+                  }`}
+                >
+                  €{netBalance.toFixed(2)}
+                </p>
+              </div>
+
+              <div className="bg-white shadow-md border rounded-lg p-6">
+                <h3 className="text-lg font-semibold text-center mb-2">
+                  Spending Breakdown
+                </h3>
+
+                <div className="w-full h-80">
+                  <ResponsiveContainer>
+                    <PieChart>
+                      <Pie
+                        data={categoryData}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={90}
+                        dataKey="value"
+                        label={({ name, percent = 0 }) =>
+                          `${name}: ${(percent * 100).toFixed(0)}%`
+                        }
+                      >
+                        {categoryData.map((entry, index) => (
+                          <Cell
+                            key={`cell-${index}`}
+                            fill={CATEGORY_COLORS[entry.name] || "#999"}
+                          />
+                        ))}
+                      </Pie>
+
+                      {/* Tooltip now shows € */}
+                      <Tooltip
+                        formatter={(value: number, name: string) => [
+                          `€${value.toFixed(2)}`,
+                          name,
+                        ]}
+                      />
+
+                      <Legend />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
           </div>
-        </>
-      )}
-    </div>
-
-    {/* ---------------- RIGHT COLUMN: NET BALANCE + PIE ---------------- */}
-    <div className="flex flex-col gap-6">
-
-      {/* NET BALANCE */}
-      <div className="bg-white shadow-md border rounded-lg p-6">
-        <h2 className="text-xl font-semibold text-gray-800 mb-4">Net Balance</h2>
-
-        <p
-          className={`text-2xl font-bold ${
-            netBalance >= 0 ? "text-green-600" : "text-red-600"
-          }`}
-        >
-          €{netBalance.toFixed(2)}
-        </p>
-
-        <p className="mt-2 text-gray-500 text-sm">
-          {netBalance >= 0
-            ? "Great job! You earned more than you spent this month."
-            : "Warning: You spent more than you earned this month."}
-        </p>
-      </div>
-
-      {/* PIE CHART */}
-      <div className="bg-white shadow-md border rounded-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-700 mb-2 text-center">
-          Spending Breakdown
-        </h3>
-
-        <div className="w-full h-80">
-          <ResponsiveContainer>
-            <PieChart>
-              <Pie
-                data={categoryData}
-                cx="50%"
-                cy="50%"
-                labelLine={false}
-                outerRadius={90}
-                fill="#8884d8"
-                dataKey="value"
-                label={({ name, percent = 0 }) =>
-                  `${name}: ${(percent * 100).toFixed(0)}%`
-                }
-              >
-                {categoryData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
-                ))}
-              </Pie>
-
-              <Tooltip />
-              <Legend />
-            </PieChart>
-          </ResponsiveContainer>
-        </div>
-      </div>
-    </div>
-  </div>
-)}
-
+        )}
       </div>
     </div>
   );
 };
+
 
 export default ExpenseCategorisation;
