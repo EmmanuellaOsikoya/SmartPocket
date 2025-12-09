@@ -1,5 +1,4 @@
 import React from 'react';
-import logo from './logo.svg';
 import Register from './Register';
 import Home from './Home';
 import Login from './Login';

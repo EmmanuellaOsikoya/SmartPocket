@@ -3,6 +3,15 @@ from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 import pdfplumber
 import re
+from pymongo import MongoClient
+from datetime import datetime
+
+# MongoDB setup so that the uploaded dashboards can be stored
+MONGO_URI = "mongodb+srv://ellaosikoya:smartpocket123@transactionhistory.euvjjnf.mongodb.net/"
+client = MongoClient(MONGO_URI)
+# This creates the database: expense_db and collection: dashboards
+db = client["expense_db"]
+dashboards = db["dashboards"]
 
 # Initialises FastAPI application
 app = FastAPI()
@@ -150,8 +159,36 @@ async def upload_file(file: UploadFile = File(...)):
             category = categorise_description(tx["description"])
             tx["category"] = category
             results["outcome"].append(tx)
+            
+    # totals for dashboard storage
+    total_income = sum(tx["amount"] for tx in results["income"])
+    total_outcome = sum(abs(tx["amount"]) for tx in results["outcome"])
+    net_balance = total_income - total_outcome
+    
+    # categories totals
+    categoryTotals = {}
+    for tx in results["outcome"]:
+        cat = tx["category"]
+        categoryTotals[cat] = category.Totals.get(cat, 0) + abs(tx["amount"])
+    
+    record = {
+    "timestamp": datetime.now().isoformat(),
+    "income": results["income"],
+    "outcome": results["outcome"],
+    "total_income": total_income,
+    "total_outcome": total_outcome,
+    "net_balance": total_income - total_outcome,
+    "categories": categoryTotals
+}
+
+    dashboards.insert_one(record)
 
         
-    return results          
+    return record
+
+# history endpoint to retrieve all stored dashboards
+@app.get("/history")
+def get_history():
+    return list(dashboards.find({}, {"_id": 0}))          
 
 
