@@ -47,6 +47,12 @@ const Home: React.FC = () => {
         >
           Predict my Spending
         </button>
+        <button
+          className="w-full bg-purple-500 text-white py-3 rounded hover:bg-purple-600 transition"
+          onClick={() => navigate("/history")}
+        >
+          View my Transaction History
+        </button>
       </div>
     </div>
 </div>

@@ -5,6 +5,8 @@ import pdfplumber
 import re
 from pymongo import MongoClient
 from datetime import datetime
+from fastapi import HTTPException
+from bson.objectid import ObjectId
 
 # MongoDB setup so that the uploaded dashboards can be stored
 MONGO_URI = "mongodb+srv://ellaosikoya:smartpocket123@transactionhistory.euvjjnf.mongodb.net/"
@@ -60,8 +62,9 @@ def categorise_description(text: str):
 
 # Regex pattern to extract transactions from bank PDF text for example 12/11 Tesco -45.00
 transaction_pattern = re.compile(
-    r"(\d{1,2}\s+\w{3}\s+\d{4})\s+(.+?)\s+€?(\d+\.\d{2}|0\.00)\s+€?(\d+\.\d{2}|0\.00)"
+    r"(\d{1,2}\s+(?:\w{3}|\w+)\s+\d{4})\s+(.+?)\s+€?(\d+\.\d{2}|0\.00)\s+€?(\d+\.\d{2}|0\.00)"
 )
+
 
 # GROUP 1 → date
 # GROUP 2 → description
@@ -204,6 +207,19 @@ async def upload_file(file: UploadFile = File(...)):
 # history endpoint to retrieve all stored dashboards
 @app.get("/history")
 def get_history():
-    return list(dashboards.find({}, {"_id": 0}))          
+    records = list(dashboards.find({}))
+    for r in records:
+        r["_id"] = str(r["_id"])
+    return records
+
+# endpoint to retrieve a specific dashboard by its ID
+@app.get("/history/{id}")
+def get_dashboard(id: str):
+    data = dashboards.find_one({"_id": ObjectId(id)}, {"_id": 0})
+    if not data:
+        raise HTTPException(status_code=404, detail="Dashboard not found")
+    return data  
+
+        
 
 

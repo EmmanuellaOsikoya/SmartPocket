@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const TransactionHistory: React.FC = () => {
+  const navigate = useNavigate();
+
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -73,8 +76,9 @@ const TransactionHistory: React.FC = () => {
 
               {/* BUTTON */}
               <button
+                onClick={() => navigate(`/history/${item._id}`)}
                 className="mt-auto bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
-              >
+>
                 View Details
               </button>
             </div>

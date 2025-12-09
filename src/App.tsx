@@ -5,6 +5,7 @@ import Login from './Login';
 import ExpenseCategorisation from './ExpenseCategorisation';
 import { Routes, Route } from 'react-router-dom';
 import TransactionHistory from './TrsnsactionHistory';
+import DashboardDetails from './DashboardDetails';
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
       <Route path ="/login" element={<Login />} />
       <Route path="/expense-categorisation" element={<ExpenseCategorisation />} />
       <Route path ="/history" element={<TransactionHistory />} />
+      <Route path="/history/:id" element={<DashboardDetails />} />
     </Routes>
   );
 }
