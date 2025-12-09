@@ -8,7 +8,14 @@ from datetime import datetime
 
 # MongoDB setup so that the uploaded dashboards can be stored
 MONGO_URI = "mongodb+srv://ellaosikoya:smartpocket123@transactionhistory.euvjjnf.mongodb.net/"
-client = MongoClient(MONGO_URI)
+client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=2000)
+
+try:
+    client.admin.command("ping")
+    print("MongoDB connected successfully")
+except Exception as e:
+    print("MongoDB CONNECTION ERROR:", e)
+
 # This creates the database: expense_db and collection: dashboards
 db = client["expense_db"]
 dashboards = db["dashboards"]
@@ -19,7 +26,10 @@ app = FastAPI()
 # Allows requests from React frontend 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # React dev server
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+    ],  # React dev server
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -93,12 +103,12 @@ def extract_transactions(text: str):
             continue
         
         # Transfers to people should be classed as outcome
-        if "transfer from" in desc_lower:
+        if "transfer to" in desc_lower:
             amount = -abs(money_out) # Revolut will print the actual transfer amount here
             transactions.append({
                 "date": date,
                 "description": desc,
-                "amount": amount # classed as positive
+                "amount": amount # classed as negative
             })
             continue
         
@@ -169,7 +179,7 @@ async def upload_file(file: UploadFile = File(...)):
     categoryTotals = {}
     for tx in results["outcome"]:
         cat = tx["category"]
-        categoryTotals[cat] = category.Totals.get(cat, 0) + abs(tx["amount"])
+        categoryTotals[cat] = categoryTotals.get(cat, 0) + abs(tx["amount"])
     
     record = {
     "timestamp": datetime.now().isoformat(),
@@ -181,10 +191,15 @@ async def upload_file(file: UploadFile = File(...)):
     "categories": categoryTotals
 }
 
-    dashboards.insert_one(record)
+    inserted = dashboards.insert_one(record)
 
-        
-    return record
+    saved_record = dashboards.find_one({"_id": inserted.inserted_id})
+
+    # Convert ObjectId → string
+    saved_record["_id"] = str(saved_record["_id"])
+
+    return saved_record
+
 
 # history endpoint to retrieve all stored dashboards
 @app.get("/history")
