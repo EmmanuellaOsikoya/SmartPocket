@@ -218,6 +218,7 @@ async def upload_file(file: UploadFile = File(...)):
            
     # Bank statement timestamp (for dashboard storage) 
     statement_month = transactions[0]["date"]
+    statement_month = statement_month.replace("Sept", "Sep")
     statement_month = datetime.strptime(statement_month, "%d %b %Y").strftime("%Y-%m")
 
     # Structure that will be returned to frontend
@@ -283,7 +284,7 @@ def get_history(month: int | None = Query(None), year: int | None = Query(None))
 
         # Timestamp looks like: 2025-12-09T16:49:41
         # So we filter by prefix "2025-12"
-        filter_query["timestamp"] = {"$regex": f"^{year_str}-{month_str}"}
+        filter_query["statement_month"] = f"{year_str}-{month_str}"
     
     records = list(dashboards.find(filter_query))
     for r in records:

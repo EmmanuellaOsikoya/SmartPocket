@@ -190,7 +190,7 @@ return (
               </h2>
 
               {results.income.map((tx: any, idx: number) => (
-                <div key={idx} className="border-b py-2">
+                <div key={tx.date + tx.description +idx} className="border-b py-2">
                   <div className="flex justify-between">
                     <span>{tx.description}</span>
                     <span className="text-green-600 font-semibold">

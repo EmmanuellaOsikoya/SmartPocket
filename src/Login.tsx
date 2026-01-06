@@ -71,6 +71,7 @@ const Login: React.FC = () => {
       <h2 className="text-2xl font-bold mb-4">Login</h2>
 
       {message && <div className="text-green-500 mb-4">{message}</div>}
+      {error && <div className="text-red-500 mb-4">{error}</div>}
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <input

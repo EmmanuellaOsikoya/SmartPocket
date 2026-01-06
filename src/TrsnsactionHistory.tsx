@@ -31,7 +31,6 @@ const TransactionHistory: React.FC = () => {
   fetchHistory();
 }, []);
 
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-600">
@@ -39,6 +38,7 @@ const TransactionHistory: React.FC = () => {
       </div>
     );
   }
+
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
@@ -81,51 +81,62 @@ const TransactionHistory: React.FC = () => {
         </button>
       </div>
 
-      {/* RESULTS */}
+       {/* RESULTS */}
       {history.length === 0 ? (
         <p className="text-center text-gray-500">
           No dashboards found for selected period.
         </p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {history.map((item) => (
-            <div
-              key={item.timestamp}
-              className="bg-white shadow-lg rounded-xl p-6 hover:shadow-xl transition"
-            >
-              {/* Timestamp */}
-              <p className="text-sm text-gray-500 mb-2">
-                {new Date(item.timestamp).toLocaleString()}
-              </p>
+          {history.map((item) => {
+            // Convert "YYYY-MM" → pretty month name
+            let formattedMonth = item.statement_month;
+            if (item.statement_month) {
+              const [yearStr, monthStr] = item.statement_month.split("-");
+              const dateObj = new Date(Number(yearStr), Number(monthStr) - 1);
+              formattedMonth = dateObj.toLocaleString("default", {
+                month: "long",
+                year: "numeric",
+              });
+            }
 
-              {/* NET BALANCE */}
-              <p
-                className={`text-xl font-bold mb-2 ${
-                  item.net_balance >= 0 ? "text-green-600" : "text-red-600"
-                }`}
+            return (
+              <div
+                key={item._id}
+                className="bg-white shadow-lg rounded-xl p-6 hover:shadow-xl transition flex flex-col"
               >
-                Net Balance: €{item.net_balance.toFixed(2)}
-              </p>
+                {/* Month */}
+                <p className="text-sm text-gray-500 mb-2">{formattedMonth}</p>
 
-              {/* TOTAL INCOME */}
-              <p className="text-green-700 font-medium">
-                Total Income: €{item.total_income.toFixed(2)}
-              </p>
+                {/* NET BALANCE */}
+                <p
+                  className={`text-xl font-bold mb-2 ${
+                    item.net_balance >= 0 ? "text-green-600" : "text-red-600"
+                  }`}
+                >
+                  Net Balance: €{item.net_balance.toFixed(2)}
+                </p>
 
-              {/* TOTAL OUTCOME */}
-              <p className="text-red-700 font-medium mb-4">
-                Total Outcome: €{item.total_outcome.toFixed(2)}
-              </p>
+                {/* TOTAL INCOME */}
+                <p className="text-green-700 font-medium">
+                  Total Income: €{item.total_income.toFixed(2)}
+                </p>
 
-              {/* BUTTON */}
-              <button
-                onClick={() => navigate(`/history/${item._id}`)}
-                className="mt-auto bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
-              >
-                View Details
-              </button>
-            </div>
-          ))}
+                {/* TOTAL OUTCOME */}
+                <p className="text-red-700 font-medium mb-4">
+                  Total Outcome: €{item.total_outcome.toFixed(2)}
+                </p>
+
+                {/* BUTTON */}
+                <button
+                  onClick={() => navigate(`/history/${item._id}`)}
+                  className="mt-auto bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
+                >
+                  View Details
+                </button>
+              </div>
+            );
+          })}
         </div>
       )}
     </div>
