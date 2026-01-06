@@ -8,6 +8,22 @@ from datetime import datetime
 from fastapi import HTTPException
 from bson.objectid import ObjectId
 from fastapi import Query
+from passlib.context import CryptContext
+
+# Initialises FastAPI application
+app = FastAPI()
+
+# Allows requests from React frontend 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:3000",
+        "http://127.0.0.1:3000", 
+        ],  # React dev server
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # MongoDB setup so that the uploaded dashboards can be stored
 MONGO_URI = "mongodb+srv://ellaosikoya:smartpocket123@transactionhistory.euvjjnf.mongodb.net/"
@@ -18,25 +34,67 @@ try:
     print("MongoDB connected successfully")
 except Exception as e:
     print("MongoDB CONNECTION ERROR:", e)
+     
+db = client["expense_db"] # creates the database expense_db
+users = db["users"] # creates a user collection in mongoDB
+dashboards = db["dashboards"] # creates a collection: dashboards
+budgets = db["budgets"] # creates a collection for budgets
 
-# This creates the database: expense_db and collection: dashboards
-db = client["expense_db"]
-dashboards = db["dashboards"]
+# Password hashing setup
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+MAX_PASSWORD_LENGTH = 72  # bcrypt limit
 
-# Initialises FastAPI application
-app = FastAPI()
+def hash_password(password: str):
+    # Pass string directly, no manual encoding or truncation
+    return pwd_context.hash(password)
 
-# Allows requests from React frontend 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://127.0.0.1:3000",
-    ],  # React dev server
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+def verify_password(plain: str, hashed: str):
+    return pwd_context.verify(plain, hashed)
+
+@app.get("/ping")
+def ping():
+    return {"status": "pong"}
+
+# Register endpoint that will allow a user to create an account
+@app.post("/register")
+def register_user(payload: dict):
+    email = payload.get("email")
+    password = payload.get("password")
+
+    if not email or not password:
+        raise HTTPException(400, "Email and password required")
+
+    if len(password.encode('utf-8')) > MAX_PASSWORD_LENGTH:
+        raise HTTPException(400, "Password cannot be longer than 72 characters")
+
+    existing = users.find_one({"email": email})
+    if existing:
+        raise HTTPException(400, "Account already exists")
+
+    user = {
+        "email": email,
+        "password": hash_password(password),
+        "createdAt": datetime.now().isoformat()
+    }
+
+    users.insert_one(user)
+
+    return {"status": "ok"}
+
+# endpoint that allows user to login
+@app.post("/login")
+def login_user(payload: dict):
+    email = payload.get("email")
+    password = payload.get("password")
+
+    user = users.find_one({"email": email})
+    if not user or not verify_password(password, user["password"]):
+        raise HTTPException(401, "Invalid credentials")
+
+    return {
+        "userId": str(user["_id"]),
+        "email": user["email"]
+    }
 
 # Keyword-based rule system for expense categorisation
 CATEGORIES = {
@@ -154,7 +212,14 @@ async def upload_file(file: UploadFile = File(...)):
     
     # Extract transactions using regex
     transactions = extract_transactions(text)
-    
+    print(f"Extracted {len(transactions)} transactions")
+    if not transactions:
+        raise HTTPException(400, "No transactions found")
+           
+    # Bank statement timestamp (for dashboard storage) 
+    statement_month = transactions[0]["date"]
+    statement_month = datetime.strptime(statement_month, "%d %b %Y").strftime("%Y-%m")
+
     # Structure that will be returned to frontend
     results = {
         "income": [],
@@ -186,7 +251,7 @@ async def upload_file(file: UploadFile = File(...)):
         categoryTotals[cat] = categoryTotals.get(cat, 0) + abs(tx["amount"])
     
     record = {
-    "timestamp": datetime.now().isoformat(),
+    "statement_month": statement_month,
     "income": results["income"],
     "outcome": results["outcome"],
     "total_income": total_income,
@@ -220,7 +285,7 @@ def get_history(month: int | None = Query(None), year: int | None = Query(None))
         # So we filter by prefix "2025-12"
         filter_query["timestamp"] = {"$regex": f"^{year_str}-{month_str}"}
     
-    records = list(dashboards.find({}))
+    records = list(dashboards.find(filter_query))
     for r in records:
         r["_id"] = str(r["_id"])
     return records
@@ -233,17 +298,10 @@ def get_dashboard(id: str):
         raise HTTPException(status_code=404, detail="Dashboard not found")
     return data  
 
-# endpoint to save budget data
-@app.post("/save-budget")
-def save_budget(budget: dict):
-    budget["timestamp"] = datetime.now().isoformat()
-    db.budgets.insert_one(budget)
-    return {"status": "ok"}
-
-@app.get("/progress/{timestamp}")
-def get_progress(timestamp: str):
+@app.get("/progress/{month}")
+def get_progress(month: str):
     # Get the dashboard for that month
-    month_record = dashboards.find_one({"timestamp": timestamp})
+    month_record = dashboards.find_one({"statement_month": month})
     if not month_record:
         raise HTTPException(status_code=404, detail="Dashboard not found")
 
@@ -270,6 +328,37 @@ def get_progress(timestamp: str):
         })
 
     return result
+
+@app.post("/save-budget")
+def save_budget(payload: dict):
+
+    # Extract month from timestamp-like input
+    # (e.g. "2025-12", "2025-12-09T15:33:20")
+    month = payload.get("month")
+    if not month:
+        raise HTTPException(400, "Month is required")
+
+    total = payload.get("totalBudget")
+    categories = payload.get("categories")
+
+    if total is None or categories is None:
+        raise HTTPException(400, "Missing fields")
+
+    # Upsert (update or insert new)
+    budgets.update_one(
+        {"month": month},
+        {
+            "$set": {
+                "month": month,
+                "totalBudget": total,
+                "categories": categories,
+            }
+        },
+        upsert=True,
+    )
+
+    return {"status": "ok"}
+
 
 
 

@@ -7,6 +7,7 @@ import { Routes, Route } from 'react-router-dom';
 import TransactionHistory from './TrsnsactionHistory';
 import DashboardDetails from './DashboardDetails';
 import SetBudget from './SetBudget';
+import ProgressPage from './ProgressPage';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
       <Route path ="/history" element={<TransactionHistory />} />
       <Route path="/history/:id" element={<DashboardDetails />} />
       <Route path="/set-budget" element={<SetBudget />} />
+      <Route path="/progress/:month" element={<ProgressPage />} />
     </Routes>
   );
 }

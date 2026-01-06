@@ -5,6 +5,7 @@
 // imports needed for this file
 import React, { useState, DragEvent, ChangeEvent} from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { useNavigate } from 'react-router-dom';
 
 // Colours for categories and pie chart slices
 const CATEGORY_COLORS: Record<string, string> = {
@@ -18,6 +19,8 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 const ExpenseCategorisation: React.FC = () => {
+    const navigate = useNavigate();
+
     const [file, setFile] = useState<File | null>(null);
 
     // This tracks whether a file is being dragged over the dropping zone
@@ -292,25 +295,6 @@ return (
             </div>
           </div>
         )}
-        {/* SET BUDGET BUTTON */}
-        <div className="mt-8 flex justify-end">
-          <button
-            onClick={() => window.location.href = "/set-budget"}
-            className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition"
-          >
-            Set Budget for Next Month
-          </button>
-        </div>
-
-        {/* VIEW PROGRESS BUTTON */}
-      <div className="mt-8 flex justify-center">
-        <button
-          onClick={() => window.location.href = "/budget-progress"}
-          className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition"
-        >
-          View Budget Progress
-        </button>
-      </div>
       </div>
     </div>
   );
