@@ -5,7 +5,7 @@
 import React, { useState } from 'react';
 import {useNavigate} from 'react-router-dom';
 
-const Register: React.FC = () => {
+const Login: React.FC = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         email: '',
@@ -13,6 +13,8 @@ const Register: React.FC = () => {
     });
 
     const [message, setMessage] = useState<string | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({
@@ -21,21 +23,46 @@ const Register: React.FC = () => {
         });
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        setMessage('Login successful! Bringing you to the main page...');
-        //Clears the form
-        setFormData({
-            email: '',
-            password: '',
-        });
+    const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setMessage(null);
+    setError(null);
+    setLoading(true);
 
-        setTimeout(() => {
-            navigate('/home');
-        }, 800);
+    try {
+      const res = await fetch("http://127.0.0.1:8000/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify(formData),
+      });
 
+      const data = await res.json();
 
+      if (!res.ok) {
+        setError(data.detail || "Login failed");
+        setLoading(false);
+        return;
+      }
+
+      setMessage("Login successful! Redirecting...");
+      setLoading(false);
+
+      // Clear form
+      setFormData({ email: "", password: "" });
+
+      // Redirect after short delay
+      setTimeout(() => {
+        navigate("/home");
+      }, 800);
+    } catch (err) {
+      console.error(err);
+      setError("Backend not reachable");
+      setLoading(false);
     }
+  };
 
     // Actual registration form
    return (
@@ -53,6 +80,7 @@ const Register: React.FC = () => {
           value={formData.email}
           onChange={handleChange}
           className="p-2 border rounded"
+          required
         />
         <input
           type="password"
@@ -61,17 +89,21 @@ const Register: React.FC = () => {
           value={formData.password}
           onChange={handleChange}
           className="p-2 border rounded"
+          required
         />
         <button
-          type="submit"
-          className="bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition"
-        >
-          Register
-        </button>
+            type="submit"
+            className={`bg-blue-500 text-white p-2 rounded hover:bg-blue-600 transition ${
+              loading ? "opacity-50 cursor-not-allowed" : ""
+            }`}
+            disabled={loading}
+          >
+            {loading ? "Logging in..." : "Login"}
+          </button>
       </form>
     </div>
   </div>
   );
 };
 
-export default Register;
+export default Login;
