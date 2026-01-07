@@ -22,10 +22,10 @@ const TransactionHistory: React.FC = () => {
   let url = `http://127.0.0.1:8000/history?userId=${userId}`;
 
   const params = [];
-  if (month) params.push(`month=${month}`);
-  if (year) params.push(`year=${year}`);
+  if (month) params.push(`&month=${month}`);
+  if (year) params.push(`&year=${year}`);
 
-  if (params.length > 0) url += "?" + params.join("&");
+  if (params.length > 0) url += "&" + params.join("&");
 
   fetch(url)
     .then((res) => res.json())

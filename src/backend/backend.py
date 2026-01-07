@@ -253,6 +253,7 @@ async def upload_file(userId: str = Form(...), file: UploadFile = File(...)):
     
     record = {
     "userId": userId, # dashboard belongs to the user that uploaded it
+    "timestamp": datetime.now().isoformat(),
     "statement_month": statement_month,
     "income": results["income"],
     "outcome": results["outcome"],
