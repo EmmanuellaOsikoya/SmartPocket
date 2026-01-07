@@ -18,7 +18,7 @@ function App() {
       <Route path="/expense-categorisation" element={<ExpenseCategorisation />} />
       <Route path ="/history" element={<TransactionHistory />} />
       <Route path="/history/:id" element={<DashboardDetails />} />
-      <Route path="/set-budget" element={<SetBudget />} />
+      <Route path="/set-budget/:month" element={<SetBudget />} />
       <Route path="/progress/:month" element={<ProgressPage />} />
     </Routes>
   );

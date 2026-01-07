@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 const SetBudget: React.FC = () => {
   const navigate = useNavigate();
+  const { month } = useParams<{ month: string }>();
 
   // These categories should be identical to what you use in categorisation
   const CATEGORIES = [
@@ -39,9 +40,11 @@ const SetBudget: React.FC = () => {
   const handleSave = async () => {
     const payload = {
       userId: localStorage.getItem("userId"),
+      month,
       totalBudget,
       categories: budgetByCategory,
     };
+
 
     try {
       const res = await fetch("http://127.0.0.1:8000/save-budget", {
@@ -55,7 +58,7 @@ const SetBudget: React.FC = () => {
       }
 
       alert("Budget saved successfully!");
-      navigate("/"); // go back to dashboard
+      navigate("/home"); // go back to dashboard
     } catch (err) {
       alert("Error saving budget");
     }

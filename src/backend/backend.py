@@ -337,27 +337,27 @@ def save_budget(payload: dict):
     # Extract month from timestamp-like input
     # (e.g. "2025-12", "2025-12-09T15:33:20")
     month = payload.get("month")
-    if not month or userId:
-        raise HTTPException(400, "Month or userId required")
-
     total = payload.get("totalBudget")
     categories = payload.get("categories")
+    
+    if not month or not userId:
+        raise HTTPException(400, "Month and userId required")
 
-    if total is None or categories is None:
-        raise HTTPException(400, "Missing fields")
 
     # Upsert (update or insert new)
     budgets.update_one(
-        {"month": month},
-        {
-            "$set": {
-                "month": month,
-                "totalBudget": total,
-                "categories": categories,
-            }
-        },
-        upsert=True,
-    )
+    {"userId": userId, "month": month},
+    {
+        "$set": {
+            "userId": userId,
+            "month": month,
+            "totalBudget": total,
+            "categories": categories,
+            "updatedAt": datetime.utcnow().isoformat()
+        }
+    },
+    upsert=True
+)
 
     return {"status": "ok"}
 

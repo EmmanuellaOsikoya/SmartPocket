@@ -300,6 +300,18 @@ return (
                       <Legend />
                     </PieChart>
                   </ResponsiveContainer>
+
+                {/* SET BUDGET BUTTON */}
+                <div className="mt-8 flex justify-center">
+                  <button
+                    onClick={() =>
+                      navigate(`/set-budget/${results.statement_month}`)
+                    }
+                    className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition"
+                  >
+                    Set Budget for Next Month
+                  </button>
+                </div>
                 </div>
               </div>
             </div>
