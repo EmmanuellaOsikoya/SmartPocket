@@ -12,7 +12,14 @@ const TransactionHistory: React.FC = () => {
   const fetchHistory = () => {
   setLoading(true);
 
-  let url = "http://127.0.0.1:8000/history";
+  const userId = localStorage.getItem("userId");
+
+  if (!userId) {
+    alert("You must be logged in to view transaction history.");
+    return;
+  }
+
+  let url = `http://127.0.0.1:8000/history?userId=${userId}`;
 
   const params = [];
   if (month) params.push(`month=${month}`);
@@ -22,7 +29,14 @@ const TransactionHistory: React.FC = () => {
 
   fetch(url)
     .then((res) => res.json())
-    .then((data) => setHistory(data.reverse()))
+    .then((data) => {
+      if (Array.isArray(data)) {
+        setHistory(data.reverse());
+      } else {
+        console.error("Unexpected response:", data);
+        setHistory([]);
+      }
+    })
     .finally(() => setLoading(false));
 };
 

@@ -38,6 +38,7 @@ const SetBudget: React.FC = () => {
 
   const handleSave = async () => {
     const payload = {
+      userId: localStorage.getItem("userId"),
       totalBudget,
       categories: budgetByCategory,
     };

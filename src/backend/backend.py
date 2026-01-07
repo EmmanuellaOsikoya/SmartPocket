@@ -1,5 +1,5 @@
 # imports needed for backend.py
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 import pdfplumber
 import re
@@ -190,7 +190,7 @@ def extract_transactions(text: str):
 
 # FastAPI endpoint to receive the uploaded PDF file
 @app.post("/upload")
-async def upload_file(file: UploadFile = File(...)):
+async def upload_file(userId: str = Form(...), file: UploadFile = File(...)):
     """
     Main backend endpoint:
     - Receives a PDF file from the React frontend
@@ -252,6 +252,7 @@ async def upload_file(file: UploadFile = File(...)):
         categoryTotals[cat] = categoryTotals.get(cat, 0) + abs(tx["amount"])
     
     record = {
+    "userId": userId, # dashboard belongs to the user that uploaded it
     "statement_month": statement_month,
     "income": results["income"],
     "outcome": results["outcome"],
@@ -270,11 +271,10 @@ async def upload_file(file: UploadFile = File(...)):
 
     return saved_record
 
-
 # history endpoint to retrieve all stored dashboards
 @app.get("/history")
-def get_history(month: int | None = Query(None), year: int | None = Query(None)):
-    filter_query = {}
+def get_history(userId: str, month: int | None = Query(None), year: int | None = Query(None)):
+    filter_query = {"userId": userId}
 
     # If a month + year were passed
     if month and year:
@@ -332,12 +332,12 @@ def get_progress(month: str):
 
 @app.post("/save-budget")
 def save_budget(payload: dict):
-
+    userId = payload.get("userId")
     # Extract month from timestamp-like input
     # (e.g. "2025-12", "2025-12-09T15:33:20")
     month = payload.get("month")
-    if not month:
-        raise HTTPException(400, "Month is required")
+    if not month or userId:
+        raise HTTPException(400, "Month or userId required")
 
     total = payload.get("totalBudget")
     categories = payload.get("categories")

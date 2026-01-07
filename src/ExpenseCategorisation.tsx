@@ -65,12 +65,22 @@ const handleFileSelect = (e: ChangeEvent<HTMLInputElement>) => {
 const handleUpload = async () => {
     // Ensures a file is selected
     if (!file) return alert("No file has been selected. Please select a file!");
+    
+    // Attaches the user that is logged in currently
+    const userId = localStorage.getItem("userId");
+
+    if (!userId) {
+      alert("You must be logged in to upload a statement.");
+      return;
+    }
+
     setLoading(true);
     setResults(null);
 
     // Prepares the file for upload
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('userId', userId);
 
     // Uploads the file to the backend
     try {

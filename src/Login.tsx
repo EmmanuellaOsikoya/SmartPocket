@@ -47,6 +47,10 @@ const Login: React.FC = () => {
         return;
       }
 
+      // Remembers who is logged in
+      localStorage.setItem("userId", data.userId);
+      localStorage.setItem("email", data.email);
+
       setMessage("Login successful! Redirecting...");
       setLoading(false);
 
