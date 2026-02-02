@@ -37,7 +37,7 @@ const Home: React.FC = () => {
         </button>
         <button
           className="w-full bg-rose-500 text-white py-3 rounded hover:bg-rose-600 transition"
-          onClick={() => navigate("/track-spending")}
+          onClick={() => navigate("/progress")}
         >
           Track my Spending
         </button>

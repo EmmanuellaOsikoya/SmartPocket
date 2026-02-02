@@ -1,119 +1,178 @@
-import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import React, { useState } from "react";
 
-const ProgressPage: React.FC = () => {
-  const { month } = useParams(); // from URL
-  const [progress, setProgress] = useState<any | null>(null);
-  const [loading, setLoading] = useState(true);
+/*
+  This page:
+  1. Checks if user has a budget
+  2. Allows upload of next month's statement
+  3. Displays progress comparison
+*/
 
-  useEffect(() => {
-    fetch(`http://127.0.0.1:8000/progress/${month}`)
-      .then((res) => res.json())
-      .then((data) => setProgress(data))
-      .catch(() => setProgress(null))
-      .finally(() => setLoading(false));
-  }, [month]);
+const BudgetProgress: React.FC = () => {
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex justify-center items-center">
-        Loading progress...
-      </div>
+  const userId = localStorage.getItem("userId");
+
+  const [hasBudget, setHasBudget] = useState<boolean | null>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState<any>(null);
+
+  // Check if budget exists
+  const checkBudget = async () => {
+
+    const res = await fetch(
+      `http://127.0.0.1:8000/has-budget?userId=${userId}`
     );
-  }
 
-  if (!progress) {
-    return (
-      <div className="min-h-screen flex justify-center items-center text-red-600">
-        No progress available.
-      </div>
-    );
-  }
+    const data = await res.json();
+    setHasBudget(data.hasBudget);
+  };
 
-  const {
-    total_budget,
-    total_spent,
-    overall_difference,
-    categories,
-    previous_month,
-  } = progress;
+  // Upload next month file
+  const uploadProgress = async () => {
+
+    if (!file) {
+      alert("Select a bank statement first");
+      return;
+    }
+
+    setLoading(true);
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("userId", userId!);
+
+    const res = await fetch("http://127.0.0.1:8000/upload-progress", {
+      method: "POST",
+      body: formData,
+    });
+
+    const data = await res.json();
+    setResults(data);
+
+    setLoading(false);
+  };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-10">
-      <h1 className="text-3xl font-bold mb-4 text-center">
-        Budget Progress for {month}
+    <div className="min-h-screen bg-gray-100 p-10">
+
+      <h1 className="text-3xl font-bold text-center mb-8">
+        Budget Progress Tracker
       </h1>
 
-      <p className="text-center text-gray-600 mb-8">
-        Comparing to last month's budget: <b>{previous_month}</b>
-      </p>
+      {/* STEP 1 — CHECK BUDGET */}
 
-      {/* OVERALL DIFFERENCE */}
-      <div className="bg-white rounded-xl shadow p-6 mb-10">
-        <h2 className="text-xl font-semibold mb-2">Overall</h2>
+      {hasBudget === null && (
+        <div className="text-center">
+          <button
+            onClick={checkBudget}
+            className="bg-blue-600 text-white px-6 py-3 rounded"
+          >
+            Check My Budget
+          </button>
+        </div>
+      )}
 
-        <p
-          className={`text-2xl font-bold ${
-            overall_difference >= 0 ? "text-green-600" : "text-red-600"
-          }`}
-        >
-          €{Math.abs(overall_difference).toFixed(2)}{" "}
-          {overall_difference >= 0 ? "under budget " : "over budget "}
+      {/* NO BUDGET */}
+
+      {hasBudget === false && (
+        <p className="text-center text-red-600 text-lg">
+          You must set a budget before tracking progress.
         </p>
+      )}
 
-        <p className="text-gray-600 mt-2">
-          You planned to spend €{total_budget.toFixed(2)} and actually spent
-          €{total_spent.toFixed(2)}.
-        </p>
-      </div>
+      {/* STEP 2 — UPLOAD NEXT MONTH */}
 
-      {/* CATEGORY BREAKDOWN */}
-      <div className="bg-white rounded-xl shadow p-6">
-        <h2 className="text-xl font-semibold mb-6">
-          Category Breakdown
-        </h2>
+      {hasBudget === true && !results && (
+        <div className="bg-white p-8 rounded shadow text-center">
 
-        <div className="space-y-6">
-          {Object.entries(categories).map(([cat, info]: any) => {
-            const { budget, spent, difference } = info;
+          <p className="mb-4 font-medium">
+            Upload next month's bank statement
+          </p>
 
-            const percentage =
-              budget > 0 ? Math.min((spent / budget) * 100, 100) : 0;
+          <input
+            type="file"
+            onChange={(e) =>
+              e.target.files && setFile(e.target.files[0])
+            }
+          />
 
-            return (
-              <div key={cat}>
-                <div className="flex justify-between mb-1">
-                  <span className="font-medium">{cat}</span>
-                  <span
-                    className={`font-semibold ${
-                      difference >= 0 ? "text-green-600" : "text-red-600"
-                    }`}
-                  >
-                    {difference >= 0 ? "+" : "-"}€
-                    {Math.abs(difference).toFixed(2)}
-                  </span>
+          <button
+            onClick={uploadProgress}
+            disabled={loading}
+            className="block mx-auto mt-6 bg-purple-600 text-white px-6 py-2 rounded"
+          >
+            {loading ? "Processing..." : "Track Progress"}
+          </button>
+        </div>
+      )}
+
+      {/* STEP 3 — SHOW RESULTS */}
+
+      {results && (
+        <div className="mt-10 space-y-6">
+
+          <div className="bg-white p-6 rounded shadow">
+            <h2 className="text-xl font-semibold mb-2">
+              Overall Performance
+            </h2>
+
+            <p>
+              Budget: €{results.budgetTotal}
+            </p>
+
+            <p>
+              This Month: €{results.currentTotal}
+            </p>
+
+            <p
+              className={
+                results.overallOverUnder <= 0
+                  ? "text-green-600"
+                  : "text-red-600"
+              }
+            >
+              Over / Under: €{results.overallOverUnder}
+            </p>
+
+            <p className="font-semibold mt-2">
+              Better month: {results.betterMonth}
+            </p>
+          </div>
+
+          <div className="bg-white p-6 rounded shadow">
+            <h2 className="text-xl font-semibold mb-4">
+              Category Comparison
+            </h2>
+
+            {results.categories.map((c: any) => (
+              <div
+                key={c.category}
+                className="border-b py-3 flex justify-between"
+              >
+                <div>
+                  <p className="font-medium">{c.category}</p>
+                  <p className="text-sm text-gray-500">
+                    Previous: €{c.previous} | Current: €{c.current}
+                  </p>
                 </div>
 
-                <div className="w-full bg-gray-200 rounded h-3">
-                  <div
-                    className={`h-3 rounded ${
-                      difference >= 0 ? "bg-green-500" : "bg-red-500"
-                    }`}
-                    style={{ width: `${percentage}%` }}
-                  ></div>
-                </div>
-
-                <p className="text-xs text-gray-500 mt-1">
-                  Budget: €{budget.toFixed(2)} — Spent: €
-                  {spent.toFixed(2)}
+                <p
+                  className={
+                    c.overUnder <= 0
+                      ? "text-green-600"
+                      : "text-red-600"
+                  }
+                >
+                  €{c.overUnder}
                 </p>
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
+
     </div>
   );
 };
 
-export default ProgressPage;
+export default BudgetProgress;

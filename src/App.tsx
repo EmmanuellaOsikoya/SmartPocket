@@ -19,7 +19,7 @@ function App() {
       <Route path ="/history" element={<TransactionHistory />} />
       <Route path="/history/:id" element={<DashboardDetails />} />
       <Route path="/set-budget/:month" element={<SetBudget />} />
-      <Route path="/progress/:month" element={<ProgressPage />} />
+      <Route path="/progress" element={<ProgressPage />} />
     </Routes>
   );
 }
