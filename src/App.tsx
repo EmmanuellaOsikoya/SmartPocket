@@ -8,6 +8,7 @@ import TransactionHistory from './TrsnsactionHistory';
 import DashboardDetails from './DashboardDetails';
 import SetBudget from './SetBudget';
 import ProgressPage from './ProgressPage';
+import DashboardComparison from './DashboardComparison';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
       <Route path="/history/:id" element={<DashboardDetails />} />
       <Route path="/set-budget" element={<SetBudget />} />
       <Route path="/progress" element={<ProgressPage />} />
+      <Route path="/compare-dashboards" element={<DashboardComparison />} />
     </Routes>
   );
 }

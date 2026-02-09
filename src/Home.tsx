@@ -56,6 +56,12 @@ const Home: React.FC = () => {
             >
               Set Budget
             </button>
+            <button
+              className="w-full bg-indigo-500 text-white py-3 rounded hover:bg-indigo-600 transition"
+              onClick={() => navigate("/compare-dashboards")}
+          >
+            Compare Dashboards
+          </button>
           </div>
         </div>
       </div>

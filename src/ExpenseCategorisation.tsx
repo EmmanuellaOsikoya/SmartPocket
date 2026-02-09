@@ -2,7 +2,6 @@
 // imports needed for this file
 import React, { useState, DragEvent, ChangeEvent} from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
-import { useNavigate } from 'react-router-dom';
 
 // Colours for categories and pie chart slices
 const CATEGORY_COLORS: Record<string, string> = {
@@ -16,7 +15,6 @@ const CATEGORY_COLORS: Record<string, string> = {
 };
 
 const ExpenseCategorisation: React.FC = () => {
-    const navigate = useNavigate();
 
     const [file, setFile] = useState<File | null>(null);
 
