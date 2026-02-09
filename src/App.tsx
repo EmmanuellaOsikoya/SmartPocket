@@ -8,6 +8,7 @@ import TransactionHistory from './TrsnsactionHistory';
 import DashboardDetails from './DashboardDetails';
 import SetBudget from './SetBudget';
 import ProgressPage from './ProgressPage';
+import Sidebar from './sidebar';
 
 function App() {
   return (
