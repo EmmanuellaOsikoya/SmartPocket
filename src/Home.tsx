@@ -12,7 +12,7 @@ const Home: React.FC = () => {
       <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
       <div
-        className="relative min-h-screen flex flex-col items-center justify-center bg-cover bg-center ml-64"
+        className="relative min-h-screen flex flex-col items-center justify-center bg-cover bg-center"
         style={{ backgroundImage: "url('/bgimage3.webp')" }}
       >
         <div className="relative z-10 flex flex-col items-center gap-4 w-full max-w-xs p-6 bg-white bg-opacity-80 rounded-lg shadow-lg">
@@ -49,6 +49,12 @@ const Home: React.FC = () => {
               onClick={() => navigate("/history")}
             >
               View my Transaction History
+            </button>
+            <button
+              className="w-full bg-amber-500 text-white py-3 rounded hover:bg-amber-600 transition"
+              onClick={() => navigate("/set-budget")}
+            >
+              Set Budget
             </button>
           </div>
         </div>

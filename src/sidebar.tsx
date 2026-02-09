@@ -1,3 +1,4 @@
+import React from "react";
 import { useNavigate } from "react-router-dom";
 
 /*
@@ -30,7 +31,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
 
   return (
     <>
-      {/* Toggle button */}
+      {/* Toggle button - always visible */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="fixed top-4 left-4 z-50 bg-gray-800 text-white p-2 rounded hover:bg-gray-700 transition"
@@ -48,10 +49,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
         )}
       </button>
 
-      {/* Sidebar */}
+      {/* Sidebar - slides in from left */}
       <div
-        className={`fixed top-0 left-0 h-screen bg-gray-900 text-white flex flex-col p-6 z-40 transition-transform duration-300 ${
-          isOpen ? "translate-x-0 w-64" : "-translate-x-full w-64"
+        className={`fixed top-0 left-0 w-64 h-screen bg-gray-900 text-white flex flex-col p-6 z-40 transition-transform duration-300 ${
+          isOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* APP NAME */}
@@ -65,30 +66,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
           <p className="font-semibold break-words">
             {email}
           </p>
-        </div>
-
-        {/* NAVIGATION */}
-        <div className="flex flex-col gap-4 flex-grow">
-          <button
-            onClick={() => navigate("/")}
-            className="text-left px-4 py-2 rounded hover:bg-gray-800 transition"
-          >
-            Dashboard
-          </button>
-
-          <button
-            onClick={() => navigate("/history")}
-            className="text-left px-4 py-2 rounded hover:bg-gray-800 transition"
-          >
-            Transaction History
-          </button>
-
-          <button
-            onClick={() => navigate("/progress")}
-            className="text-left px-4 py-2 rounded hover:bg-gray-800 transition"
-          >
-            Track My Progress
-          </button>
         </div>
 
         {/* LOGOUT BUTTON */}

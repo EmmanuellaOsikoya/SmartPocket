@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const SetBudget: React.FC = () => {
   const navigate = useNavigate();
-  const { month } = useParams<{ month: string }>();
 
   // These categories should be identical to what you use in categorisation
   const CATEGORIES = [
@@ -15,6 +14,9 @@ const SetBudget: React.FC = () => {
     "Transfers",
     "Other",
   ];
+
+  // Selected month state
+  const [selectedMonth, setSelectedMonth] = useState<string>("");
 
   // Total budget field
   const [totalBudget, setTotalBudget] = useState<number>(0);
@@ -28,6 +30,12 @@ const SetBudget: React.FC = () => {
   useEffect(() => {
     const initial = Object.fromEntries(CATEGORIES.map((c) => [c, 0]));
     setBudgetByCategory(initial);
+
+    // Set default month to next month
+    const today = new Date();
+    const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
+    const defaultMonth = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')}`;
+    setSelectedMonth(defaultMonth);
   }, []);
 
   const handleCategoryChange = (category: string, value: string) => {
@@ -38,13 +46,17 @@ const SetBudget: React.FC = () => {
   };
 
   const handleSave = async () => {
+    if (!selectedMonth) {
+      alert("Please select a month");
+      return;
+    }
+
     const payload = {
       userId: localStorage.getItem("userId"),
-      month,
+      month: selectedMonth,
       totalBudget,
       categories: budgetByCategory,
     };
-
 
     try {
       const res = await fetch("http://127.0.0.1:8000/save-budget", {
@@ -58,7 +70,7 @@ const SetBudget: React.FC = () => {
       }
 
       alert("Budget saved successfully!");
-      navigate("/home"); // go back to dashboard
+      navigate("/home");
     } catch (err) {
       alert("Error saving budget");
     }
@@ -66,7 +78,18 @@ const SetBudget: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 p-10">
-      <h1 className="text-3xl font-bold mb-6 text-center">Set Next Month Budget</h1>
+      <h1 className="text-3xl font-bold mb-6 text-center">Set Budget</h1>
+
+      {/* MONTH SELECTOR */}
+      <div className="bg-white p-6 rounded-lg shadow mb-8">
+        <label className="font-semibold text-lg">Select Month</label>
+        <input
+          type="month"
+          className="w-full mt-3 p-3 border rounded"
+          value={selectedMonth}
+          onChange={(e) => setSelectedMonth(e.target.value)}
+        />
+      </div>
 
       {/* TOTAL BUDGET */}
       <div className="bg-white p-6 rounded-lg shadow mb-8">
@@ -100,7 +123,13 @@ const SetBudget: React.FC = () => {
       </div>
 
       {/* SAVE BUTTON */}
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-4">
+        <button
+          onClick={() => navigate("/home")}
+          className="bg-gray-500 text-white px-6 py-2 rounded-lg hover:bg-gray-600 transition"
+        >
+          Cancel
+        </button>
         <button
           onClick={handleSave}
           className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition"

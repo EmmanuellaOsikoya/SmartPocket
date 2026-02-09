@@ -8,7 +8,6 @@ import TransactionHistory from './TrsnsactionHistory';
 import DashboardDetails from './DashboardDetails';
 import SetBudget from './SetBudget';
 import ProgressPage from './ProgressPage';
-import Sidebar from './sidebar';
 
 function App() {
   return (
@@ -19,7 +18,7 @@ function App() {
       <Route path="/expense-categorisation" element={<ExpenseCategorisation />} />
       <Route path ="/history" element={<TransactionHistory />} />
       <Route path="/history/:id" element={<DashboardDetails />} />
-      <Route path="/set-budget/:month" element={<SetBudget />} />
+      <Route path="/set-budget" element={<SetBudget />} />
       <Route path="/progress" element={<ProgressPage />} />
     </Routes>
   );

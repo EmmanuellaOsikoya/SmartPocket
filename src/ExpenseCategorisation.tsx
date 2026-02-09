@@ -1,7 +1,4 @@
 // This file is responsible for categorising expenses based on user input
-// The user will drag and drop a bank statement file here and tensorflows BERT model will be used to categorise each expense
-// This is placeholder logic as I want to focus on the machine learning training and integration aspect of my project next
-
 // imports needed for this file
 import React, { useState, DragEvent, ChangeEvent} from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
@@ -301,17 +298,6 @@ return (
                     </PieChart>
                   </ResponsiveContainer>
 
-                {/* SET BUDGET BUTTON */}
-                <div className="mt-8 flex justify-center">
-                  <button
-                    onClick={() =>
-                      navigate(`/set-budget/${results.statement_month}`)
-                    }
-                    className="bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition"
-                  >
-                    Set Budget for Next Month
-                  </button>
-                </div>
                 </div>
               </div>
             </div>
