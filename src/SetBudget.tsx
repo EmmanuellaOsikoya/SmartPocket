@@ -26,7 +26,9 @@ const SetBudget: React.FC = () => {
     {}
   );
 
-  // Prefill all categories to zero
+  const [loading, setLoading] = useState(false);
+
+  // Prefill all categories to zero and set default month
   useEffect(() => {
     const initial = Object.fromEntries(CATEGORIES.map((c) => [c, 0]));
     setBudgetByCategory(initial);
@@ -37,6 +39,37 @@ const SetBudget: React.FC = () => {
     const defaultMonth = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')}`;
     setSelectedMonth(defaultMonth);
   }, []);
+
+  // Load existing budget when month changes
+  useEffect(() => {
+    if (!selectedMonth) return;
+
+    const loadBudget = async () => {
+      const userId = localStorage.getItem("userId");
+      
+      try {
+        const res = await fetch(
+          `http://127.0.0.1:8000/get-budget?userId=${userId}&month=${selectedMonth}`
+        );
+        const data = await res.json();
+
+        if (data.hasBudget === false) {
+          // No budget for this month, reset to defaults
+          const initial = Object.fromEntries(CATEGORIES.map((c) => [c, 0]));
+          setBudgetByCategory(initial);
+          setTotalBudget(0);
+        } else {
+          // Budget exists, load it
+          setTotalBudget(data.totalBudget || 0);
+          setBudgetByCategory(data.categories || {});
+        }
+      } catch (err) {
+        console.error("Error loading budget:", err);
+      }
+    };
+
+    loadBudget();
+  }, [selectedMonth]);
 
   const handleCategoryChange = (category: string, value: string) => {
     setBudgetByCategory((prev) => ({
@@ -50,6 +83,8 @@ const SetBudget: React.FC = () => {
       alert("Please select a month");
       return;
     }
+
+    setLoading(true);
 
     const payload = {
       userId: localStorage.getItem("userId"),
@@ -69,10 +104,14 @@ const SetBudget: React.FC = () => {
         throw new Error("Failed to save budget");
       }
 
-      alert("Budget saved successfully!");
+      const data = await res.json();
+      alert(data.message || "Budget saved successfully!");
       navigate("/home");
     } catch (err) {
+      console.error("Error:", err);
       alert("Error saving budget");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -89,6 +128,11 @@ const SetBudget: React.FC = () => {
           value={selectedMonth}
           onChange={(e) => setSelectedMonth(e.target.value)}
         />
+        <p className="text-sm text-gray-600 mt-2">
+          {budgetByCategory && Object.values(budgetByCategory).some(v => v > 0)
+            ? "Budget exists for this month, you can update it if you would like"
+            : "No budget set for this month yet"}
+        </p>
       </div>
 
       {/* TOTAL BUDGET */}
@@ -114,7 +158,7 @@ const SetBudget: React.FC = () => {
               <input
                 type="number"
                 className="w-32 p-2 border rounded text-right"
-                value={budgetByCategory[cat]}
+                value={budgetByCategory[cat] || 0}
                 onChange={(e) => handleCategoryChange(cat, e.target.value)}
               />
             </div>
@@ -132,9 +176,10 @@ const SetBudget: React.FC = () => {
         </button>
         <button
           onClick={handleSave}
-          className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition"
+          disabled={loading}
+          className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition disabled:opacity-50"
         >
-          Save Budget
+          {loading ? "Saving..." : "Save Budget"}
         </button>
       </div>
     </div>

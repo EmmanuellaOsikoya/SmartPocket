@@ -1,29 +1,6 @@
 import React, { useState } from "react";
 
-/*
-  Recharts imports for dual bar chart
-*/
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
-
-/*
-  This page handles:
-
-  1. Checking if user has a saved budget
-  2. Uploading next month's bank statement
-  3. Displaying progress comparison
-  4. Showing results in a dual bar chart
-*/
-
-const BudgetProgress: React.FC = () => {
-
+const ProgressPage: React.FC = () => {
   const userId = localStorage.getItem("userId");
 
   // Tracks whether budget exists
@@ -42,23 +19,18 @@ const BudgetProgress: React.FC = () => {
   // STEP 1: Check if user has a budget
   // ------------------------------------
   const checkBudget = async () => {
-
     const res = await fetch(
       `http://127.0.0.1:8000/has-budget?userId=${userId}`
     );
 
     const data = await res.json();
-
-    // true = budget exists
-    // false = no budget yet
     setHasBudget(data.hasBudget);
   };
 
   // ------------------------------------
-  // STEP 2: Upload next month statement
+  // STEP 2: Upload statement and check budget
   // ------------------------------------
   const uploadProgress = async () => {
-
     if (!file) {
       alert("Please select a bank statement first!");
       return;
@@ -70,56 +42,28 @@ const BudgetProgress: React.FC = () => {
     formData.append("file", file);
     formData.append("userId", userId!);
 
-    const res = await fetch(
-      "http://127.0.0.1:8000/upload-progress",
-      {
+    try {
+      const res = await fetch("http://127.0.0.1:8000/upload-progress", {
         method: "POST",
         body: formData,
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to process statement");
       }
-    );
 
-    const data = await res.json();
-
-    setResults(data);
-
-    setLoading(false);
+      const data = await res.json();
+      setResults(data);
+    } catch (err) {
+      console.error("Error:", err);
+      alert("Failed to process your statement. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
-
-  // ------------------------------------
-  // Prepare chart data
-  // ------------------------------------
-  /*
-    Backend sends:
-
-    results.categories = [
-      {
-        category: "Food",
-        current: 200,
-        previous: 150,
-        budget: 180,
-        overUnder: 20
-      },
-      ...
-    ]
-
-    Recharts wants:
-
-    [
-      { name: "Food", current: 200, previous: 150 },
-      ...
-    ]
-  */
-
-  const chartData =
-    results?.categories?.map((c: any) => ({
-      name: c.category,
-      Current: c.current,
-      Previous: c.previous,
-    })) || [];
 
   return (
     <div className="min-h-screen bg-gray-100 p-10">
-
       <h1 className="text-3xl font-bold text-center mb-8">
         Budget Progress Tracker
       </h1>
@@ -144,33 +88,46 @@ const BudgetProgress: React.FC = () => {
       {/* ============================= */}
 
       {hasBudget === false && (
-        <p className="text-center text-red-600 text-lg">
-          You must set a budget before tracking your progress.
-        </p>
+        <div className="text-center">
+          <p className="text-red-600 text-lg mb-4">
+            You must set a budget before tracking your progress.
+          </p>
+          <button
+            onClick={() => window.location.href = "/set-budget"}
+            className="bg-purple-600 text-white px-6 py-3 rounded hover:bg-purple-700 transition"
+          >
+            Set Budget Now
+          </button>
+        </div>
       )}
 
       {/* ============================= */}
-      {/* STEP 2 — UPLOAD NEXT MONTH */}
+      {/* STEP 2 — UPLOAD STATEMENT */}
       {/* ============================= */}
 
       {hasBudget === true && !results && (
         <div className="bg-white p-8 rounded shadow text-center max-w-xl mx-auto">
-
-          <p className="mb-4 font-medium">
-            Upload next month's bank statement
+          <p className="mb-4 font-medium text-lg">
+            Upload your bank statement to track budget progress
           </p>
 
           <input
             type="file"
-            onChange={(e) =>
-              e.target.files && setFile(e.target.files[0])
-            }
+            accept=".pdf"
+            onChange={(e) => e.target.files && setFile(e.target.files[0])}
+            className="mb-4"
           />
+
+          {file && (
+            <p className="text-sm text-gray-600 mb-4">
+              Selected: {file.name}
+            </p>
+          )}
 
           <button
             onClick={uploadProgress}
-            disabled={loading}
-            className="block mx-auto mt-6 bg-purple-600 text-white px-6 py-2 rounded hover:bg-purple-700 transition"
+            disabled={loading || !file}
+            className="w-full bg-purple-600 text-white px-6 py-3 rounded hover:bg-purple-700 transition disabled:opacity-50"
           >
             {loading ? "Processing..." : "Track Progress"}
           </button>
@@ -182,94 +139,170 @@ const BudgetProgress: React.FC = () => {
       {/* ============================= */}
 
       {results && (
-        <div className="mt-10 space-y-8">
-
+        <div className="mt-10 space-y-8 max-w-4xl mx-auto">
           {/* -------------------------------- */}
-          {/* OVERALL PERFORMANCE CARD */}
+          {/* OVERALL BUDGET STATUS */}
           {/* -------------------------------- */}
 
-          <div className="bg-white p-6 rounded shadow max-w-xl mx-auto">
-
-            <h2 className="text-xl font-semibold mb-2">
-              Overall Performance
+          <div className="bg-white p-8 rounded-lg shadow">
+            <h2 className="text-2xl font-bold mb-6 text-center">
+              Overall Budget Status
             </h2>
 
-            <p>
-              Monthly Budget: €{results.budgetTotal}
-            </p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+              <div className="text-center">
+                <p className="text-gray-600 text-sm mb-1">Monthly Budget</p>
+                <p className="text-2xl font-bold text-blue-600">
+                  €{results.budgetTotal.toFixed(2)}
+                </p>
+              </div>
 
-            <p>
-              Current Month Spending: €{results.currentTotal}
-            </p>
+              <div className="text-center">
+                <p className="text-gray-600 text-sm mb-1">Total Spent</p>
+                <p className="text-2xl font-bold text-gray-800">
+                  €{results.currentTotal.toFixed(2)}
+                </p>
+              </div>
 
-            <p
-              className={
+              <div className="text-center">
+                <p className="text-gray-600 text-sm mb-1">
+                  {results.overallOverUnder <= 0 ? "Under Budget" : "Over Budget"}
+                </p>
+                <p
+                  className={`text-2xl font-bold ${
+                    results.overallOverUnder <= 0
+                      ? "text-green-600"
+                      : "text-red-600"
+                  }`}
+                >
+                  €{Math.abs(results.overallOverUnder).toFixed(2)}
+                </p>
+              </div>
+            </div>
+
+            {/* Overall Status Message */}
+            <div
+              className={`text-center py-4 rounded-lg ${
                 results.overallOverUnder <= 0
-                  ? "text-green-600 font-semibold"
-                  : "text-red-600 font-semibold"
-              }
+                  ? "bg-green-100 text-green-800"
+                  : "bg-red-100 text-red-800"
+              }`}
             >
-              Over / Under Budget: €{results.overallOverUnder}
-            </p>
-
-            <p className="mt-2 font-medium">
-              Better Performing Month: {results.betterMonth}
-            </p>
+              <p className="text-lg font-semibold">
+                {results.overallOverUnder <= 0
+                  ? "Great job! You stayed within your budget!"
+                  : "You went over your budget this month"}
+              </p>
+            </div>
           </div>
 
           {/* -------------------------------- */}
-          {/* DUAL BAR CHART COMPARISON */}
+          {/* CATEGORY BREAKDOWN */}
           {/* -------------------------------- */}
 
-          <div className="bg-white p-6 rounded shadow">
-
-            <h2 className="text-xl font-semibold mb-6 text-center">
-              Category Spending Comparison
+          <div className="bg-white p-8 rounded-lg shadow">
+            <h2 className="text-2xl font-bold mb-6 text-center">
+              Category Breakdown
             </h2>
 
-            <div className="w-full h-96">
+            <div className="space-y-4">
+              {results.categories.map((cat: any) => {
+                const isOverBudget = cat.overUnder > 0;
+                const percentage = cat.budget > 0 
+                  ? (cat.current / cat.budget) * 100 
+                  : 0;
 
-              <ResponsiveContainer>
+                return (
+                  <div
+                    key={cat.category}
+                    className={`border-l-4 p-4 rounded ${
+                      isOverBudget
+                        ? "border-red-500 bg-red-50"
+                        : "border-green-500 bg-green-50"
+                    }`}
+                  >
+                    <div className="flex justify-between items-center mb-2">
+                      <h3 className="font-semibold text-lg">
+                        {cat.category}
+                      </h3>
+                      <span
+                        className={`font-bold ${
+                          isOverBudget ? "text-red-600" : "text-green-600"
+                        }`}
+                      >
+                        {isOverBudget ? "OVER" : "UNDER"}
+                      </span>
+                    </div>
 
-                <BarChart data={chartData}>
+                    <div className="grid grid-cols-3 gap-4 text-sm">
+                      <div>
+                        <p className="text-gray-600">Budget</p>
+                        <p className="font-semibold">
+                          €{cat.budget.toFixed(2)}
+                        </p>
+                      </div>
 
-                  {/* X axis shows categories */}
-                  <XAxis dataKey="name" />
+                      <div>
+                        <p className="text-gray-600">Spent</p>
+                        <p className="font-semibold">
+                          €{cat.current.toFixed(2)}
+                        </p>
+                      </div>
 
-                  {/* Y axis is money spent */}
-                  <YAxis />
+                      <div>
+                        <p className="text-gray-600">
+                          {isOverBudget ? "Over by" : "Under by"}
+                        </p>
+                        <p
+                          className={`font-bold ${
+                            isOverBudget ? "text-red-600" : "text-green-600"
+                          }`}
+                        >
+                          €{Math.abs(cat.overUnder).toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
 
-                  {/* Hover info */}
-                  <Tooltip
-                    formatter={(value: number) => `€${value.toFixed(2)}`}
-                  />
-
-                  {/* Legend */}
-                  <Legend />
-
-                  {/* 
-                    Previous month (ORANGE) 
-                  */}
-                  <Bar
-                    dataKey="Previous"
-                    fill="#f97316"
-                    name="Previous Month"
-                  />
-
-                  {/* 
-                    Current month (BLUE) 
-                  */}
-                  <Bar
-                    dataKey="Current"
-                    fill="#2563eb"
-                    name="Current Month"
-                  />
-
-                </BarChart>
-
-              </ResponsiveContainer>
-
+                    {/* Progress Bar */}
+                    <div className="mt-3">
+                      <div className="w-full bg-gray-200 rounded-full h-2.5">
+                        <div
+                          className={`h-2.5 rounded-full ${
+                            isOverBudget ? "bg-red-600" : "bg-green-600"
+                          }`}
+                          style={{
+                            width: `${Math.min(percentage, 100)}%`,
+                          }}
+                        ></div>
+                      </div>
+                      <p className="text-xs text-gray-600 mt-1 text-right">
+                        {percentage.toFixed(0)}% of budget used
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
+          </div>
+
+          {/* -------------------------------- */}
+          {/* ACTION BUTTONS */}
+          {/* -------------------------------- */}
+
+          <div className="flex justify-center gap-4">
+            <button
+              onClick={() => setResults(null)}
+              className="bg-gray-500 text-white px-6 py-3 rounded hover:bg-gray-600 transition"
+            >
+              Track Another Month
+            </button>
+
+            <button
+              onClick={() => window.location.href = "/set-budget"}
+              className="bg-purple-600 text-white px-6 py-3 rounded hover:bg-purple-700 transition"
+            >
+              Update Budget
+            </button>
           </div>
         </div>
       )}
@@ -277,4 +310,4 @@ const BudgetProgress: React.FC = () => {
   );
 };
 
-export default BudgetProgress;
+export default ProgressPage;

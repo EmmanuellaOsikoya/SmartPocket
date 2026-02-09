@@ -331,13 +331,67 @@ def save_budget(payload: dict):
     return {"status": "ok"}
 
 # Endpoint that checks if the user has at least one saved budget
+# Endpoint to get a specific budget for a month
+@app.get("/get-budget")
+def get_budget(userId: str, month: str = Query(None)):
+    if month:
+        # Get budget for specific month
+        budget = budgets.find_one({"userId": userId, "month": month})
+    else:
+        # Get the most recent budget
+        budget = budgets.find_one({"userId": userId}, sort=[("month", -1)])
+    
+    if not budget:
+        return {"hasBudget": False}
+    
+    # Convert ObjectId to string
+    budget["_id"] = str(budget["_id"])
+    return budget
+
+@app.post("/save-budget")
+def save_budget(payload: dict):
+    userId = payload.get("userId")
+    month = payload.get("month")
+    total = payload.get("totalBudget")
+    categories = payload.get("categories")
+    
+    if not month or not userId:
+        raise HTTPException(400, "Month and userId required")
+
+    # Upsert (update or insert new)
+    result = budgets.update_one(
+        {"userId": userId, "month": month},
+        {
+            "$set": {
+                "userId": userId,
+                "month": month,
+                "totalBudget": total,
+                "categories": categories,
+                "updatedAt": datetime.utcnow().isoformat()
+            }
+        },
+        upsert=True
+    )
+
+    return {
+        "status": "ok",
+        "message": "Budget updated" if result.modified_count > 0 else "Budget created"
+    }
+    
 @app.get("/has-budget")
 def has_budget(userId: str):
+    """
+    Checks if the user has at least one budget saved.
+    Used by ProgressPage before allowing statement upload.
+    """
+    budget = budgets.find_one({"userId": userId})
 
-    exists = budgets.find_one({"userId": userId})
-    return {"hasBudget": bool(exists)}
+    return {
+        "hasBudget": budget is not None
+    }
 
-# Endpoint that allows for new bank statements to be uploaded and compares it with the previous month's dashboard and the saved budget
+
+# Update the upload-progress endpoint to use the budget for the statement's month
 @app.post("/upload-progress")
 async def upload_progress(
     userId: str = Form(...), 
@@ -360,22 +414,15 @@ async def upload_progress(
     statement_month = statement_month.replace("Sept", "Sep")
     current_month = datetime.strptime(statement_month, "%d %b %Y").strftime("%Y-%m")
 
-    # Find previous dashboard
-    previous_dashboard = dashboards.find_one(
-        {"userId": userId},
-        sort=[("statement_month", -1)]
-    )
-
-    if not previous_dashboard:
-        raise HTTPException(404, "No previous dashboard found")
+    # Get user's budget for THIS specific month (or most recent if not found)
+    budget = budgets.find_one({"userId": userId, "month": current_month})
     
-    previous_month = previous_dashboard["statement_month"]
-
-    # Get user's budget
-    budget = budgets.find_one({"userId": userId})
-
     if not budget:
-        raise HTTPException(404, "No budget set")
+        # Try to get the most recent budget
+        budget = budgets.find_one({"userId": userId}, sort=[("month", -1)])
+    
+    if not budget:
+        raise HTTPException(404, "No budget set. Please set a budget first.")
 
     # Process current month like normal
     results = {"income": [], "outcome": []}
@@ -396,42 +443,36 @@ async def upload_progress(
     for tx in results["outcome"]:
         cat = tx["category"]
         current_categories[cat] = current_categories.get(cat, 0) + abs(tx["amount"])
-        
-    # Compare with the previous month
-    previous_total = previous_dashboard["total_outcome"]
-
-    better_month = (
-        "Current month"
-        if total_outcome < previous_total
-        else "Previous month"
-    )
 
     # Build comparison per category
     category_comparison = []
 
     for cat, spent_now in current_categories.items():
-        spent_before = previous_dashboard["categories"].get(cat, 0)
         budget_for_cat = budget["categories"].get(cat, 0)
 
         category_comparison.append({
             "category": cat,
             "current": spent_now,
-            "previous": spent_before,
             "budget": budget_for_cat,
             "overUnder": spent_now - budget_for_cat
         })
     
-# Final response
+    # Also include categories that are in budget but have $0 spent
+    for cat, budget_amount in budget["categories"].items():
+        if cat not in current_categories:
+            category_comparison.append({
+                "category": cat,
+                "current": 0,
+                "budget": budget_amount,
+                "overUnder": -budget_amount  # Under budget
+            })
+
+    # Final response
     return {
         "currentMonth": current_month,
-        "previousMonth": previous_month,
-
+        "budgetMonth": budget["month"],
         "currentTotal": total_outcome,
-        "previousTotal": previous_total,
         "budgetTotal": budget["totalBudget"],
-
         "overallOverUnder": total_outcome - budget["totalBudget"],
-        "betterMonth": better_month,
-
         "categories": category_comparison
     }
