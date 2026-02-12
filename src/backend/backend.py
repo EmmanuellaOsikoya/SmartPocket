@@ -476,3 +476,70 @@ async def upload_progress(
         "overallOverUnder": total_outcome - budget["totalBudget"],
         "categories": category_comparison
     }
+    
+import requests
+from fastapi import HTTPException
+
+HF_API_TOKEN = "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"
+HF_MODEL_URL = "https://router.huggingface.co/v1/chat/completions"
+
+headers = {
+    "Authorization": f"Bearer {HF_API_TOKEN}",
+    "Content-Type": "application/json"
+}
+
+@app.post("/finance-chat")
+async def chat_with_llm(data: dict):
+    user_message = data.get("message")
+
+    if not user_message:
+        raise HTTPException(status_code=400, detail="Message is required")
+
+    payload = {
+        # Try one of these supported models:
+        "model": "meta-llama/Llama-3.2-3B-Instruct",  # Good balance
+        # OR "model": "microsoft/Phi-3.5-mini-instruct",  # Fast & efficient
+        # OR "model": "Qwen/Qwen2.5-3B-Instruct",  # Another good option
+        
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are a helpful financial assistant for SmartPocket, a budgeting app. Provide clear, concise advice about budgeting, saving, and spending."
+            },
+            {
+                "role": "user",
+                "content": user_message
+            }
+        ],
+        "max_tokens": 150,
+        "temperature": 0.7
+    }
+
+    try:
+        response = requests.post(
+            HF_MODEL_URL,
+            headers=headers,
+            json=payload,
+            timeout=60
+        )
+
+        print("STATUS CODE:", response.status_code)
+        print("RAW TEXT:", response.text)
+
+        if response.status_code != 200:
+            raise HTTPException(
+                status_code=response.status_code,
+                detail=f"HuggingFace error: {response.text}"
+            )
+
+        result = response.json()
+        
+        if "choices" in result and len(result["choices"]) > 0:
+            reply = result["choices"][0]["message"]["content"]
+        else:
+            reply = "Sorry, I couldn't generate a response."
+
+        return {"response": reply}
+
+    except requests.exceptions.RequestException as e:
+        raise HTTPException(status_code=500, detail=f"Request failed: {str(e)}")
