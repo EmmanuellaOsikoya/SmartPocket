@@ -114,6 +114,33 @@ const TransactionHistory: React.FC = () => {
               });
             }
 
+            const handleBudgetClick = async (statementMonth: string) => {
+            const userId = localStorage.getItem("userId");
+
+            if (!userId) {
+              alert("You must be logged in.");
+              return;
+            }
+
+            try {
+              const res = await fetch(
+                `http://127.0.0.1:8000/has-budget?userId=${userId}&month=${statementMonth}`
+              );
+
+              const data = await res.json();
+
+              // Navigate to SetBudget and pass month
+              navigate("/set-budget", {
+                state: { month: statementMonth }
+              });
+
+            } catch (err) {
+              console.error("Error checking budget:", err);
+              alert("Could not check budget status.");
+            }
+          };
+
+
             return (
               <div
                 key={item._id}
@@ -141,13 +168,24 @@ const TransactionHistory: React.FC = () => {
                   Total Outcome: €{item.total_outcome.toFixed(2)}
                 </p>
 
-                {/* BUTTON */}
+                <div className="mt-auto flex flex-col gap-2">
+                {/* VIEW DETAILS */}
                 <button
                   onClick={() => navigate(`/history/${item._id}`)}
-                  className="mt-auto bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full"
                 >
                   View Details
                 </button>
+
+                {/* SET / UPDATE BUDGET */}
+                <button
+                  onClick={() => handleBudgetClick(item.statement_month)}
+                  className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 w-full"
+                >
+                  Set / Update Budget
+                </button>
+              </div>
+
               </div>
             );
           })}
