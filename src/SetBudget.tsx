@@ -1,8 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 const SetBudget: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const passedMonth = (location.state as any)?.month;
+
 
   // These categories should be identical to what you use in categorisation
   const CATEGORIES = [
@@ -30,15 +34,23 @@ const SetBudget: React.FC = () => {
 
   // Prefill all categories to zero and set default month
   useEffect(() => {
-    const initial = Object.fromEntries(CATEGORIES.map((c) => [c, 0]));
-    setBudgetByCategory(initial);
+  const initial = Object.fromEntries(CATEGORIES.map((c) => [c, 0]));
+  setBudgetByCategory(initial);
 
-    // Set default month to next month
+  if (passedMonth) {
+    // If coming from Update Budget
+    setSelectedMonth(passedMonth);
+  } else {
+    // If creating brand new budget
     const today = new Date();
     const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
-    const defaultMonth = `${nextMonth.getFullYear()}-${String(nextMonth.getMonth() + 1).padStart(2, '0')}`;
+    const defaultMonth = `${nextMonth.getFullYear()}-${String(
+      nextMonth.getMonth() + 1
+    ).padStart(2, "0")}`;
     setSelectedMonth(defaultMonth);
-  }, []);
+  }
+}, [passedMonth]);
+
 
   // Load existing budget when month changes
   useEffect(() => {

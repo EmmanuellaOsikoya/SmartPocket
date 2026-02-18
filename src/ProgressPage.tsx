@@ -1,6 +1,9 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const ProgressPage: React.FC = () => {
+
+  const navigate = useNavigate();
   const userId = localStorage.getItem("userId");
 
   // Tracks whether budget exists
@@ -298,11 +301,16 @@ const ProgressPage: React.FC = () => {
             </button>
 
             <button
-              onClick={() => window.location.href = "/set-budget"}
+              onClick={() =>
+                navigate("/set-budget", {
+                  state: { month: results.statement_month }
+                })
+              }
               className="bg-purple-600 text-white px-6 py-3 rounded hover:bg-purple-700 transition"
             >
               Update Budget
             </button>
+
           </div>
         </div>
       )}
