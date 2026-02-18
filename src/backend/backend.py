@@ -39,6 +39,7 @@ db = client["expense_db"] # creates the database expense_db
 users = db["users"] # creates a user collection in mongoDB
 dashboards = db["dashboards"] # creates a collection: dashboards
 budgets = db["budgets"] # creates a collection for budgets
+progress_reports = db["progress_reports"] # creates a collection to store budget progress reports
 
 # Password hashing setup
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -298,8 +299,30 @@ def get_dashboard(id: str):
     data = dashboards.find_one({"_id": ObjectId(id)}, {"_id": 0})
     if not data:
         raise HTTPException(status_code=404, detail="Dashboard not found")
-    return data  
+    return data
 
+# Get all progress reports
+@app.get("/progress-history")
+def get_progress_history(userId: str):
+    records = list(progress_reports.find({"userId": userId}))
+    
+    for r in records:
+        r["_id"] = str(r["_id"])
+    
+    return records
+
+
+# Get single progress report
+@app.get("/progress-history/{id}")
+def get_single_progress(id: str):
+    data = progress_reports.find_one({"_id": ObjectId(id)})
+    
+    if not data:
+        raise HTTPException(status_code=404, detail="Progress report not found")
+    
+    data["_id"] = str(data["_id"])
+    return data
+  
 @app.post("/save-budget")
 def save_budget(payload: dict):
     userId = payload.get("userId")
@@ -468,14 +491,24 @@ async def upload_progress(
             })
 
     # Final response
-    return {
-        "currentMonth": current_month,
+        record = {
+        "userId": userId,
+        "timestamp": datetime.utcnow().isoformat(),
+        "statement_month": current_month,
         "budgetMonth": budget["month"],
         "currentTotal": total_outcome,
         "budgetTotal": budget["totalBudget"],
         "overallOverUnder": total_outcome - budget["totalBudget"],
         "categories": category_comparison
     }
+
+    inserted = progress_reports.insert_one(record)
+
+    saved_record = progress_reports.find_one({"_id": inserted.inserted_id})
+    saved_record["_id"] = str(saved_record["_id"])
+
+    return saved_record
+
     
 import requests
 from fastapi import HTTPException
@@ -496,10 +529,7 @@ async def chat_with_llm(data: dict):
         raise HTTPException(status_code=400, detail="Message is required")
 
     payload = {
-        # Try one of these supported models:
-        "model": "meta-llama/Llama-3.2-3B-Instruct",  # Good balance
-        # OR "model": "microsoft/Phi-3.5-mini-instruct",  # Fast & efficient
-        # OR "model": "Qwen/Qwen2.5-3B-Instruct",  # Another good option
+        "model": "meta-llama/Llama-3.2-3B-Instruct", 
         
         "messages": [
             {

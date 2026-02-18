@@ -9,6 +9,8 @@ import DashboardDetails from './DashboardDetails';
 import SetBudget from './SetBudget';
 import ProgressPage from './ProgressPage';
 import DashboardComparison from './DashboardComparison';
+import FinanceChat from './FinanceChat';
+import ProgressHistory from './ProgressHistory';
 
 function App() {
   return (
@@ -22,6 +24,8 @@ function App() {
       <Route path="/set-budget" element={<SetBudget />} />
       <Route path="/progress" element={<ProgressPage />} />
       <Route path="/compare-dashboards" element={<DashboardComparison />} />
+      <Route path="/finance-chat" element={<FinanceChat />} />
+      <Route path="/progress-history" element={<ProgressHistory />} />
     </Routes>
   );
 }
