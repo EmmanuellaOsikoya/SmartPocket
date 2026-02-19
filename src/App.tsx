@@ -11,22 +11,31 @@ import ProgressPage from './ProgressPage';
 import DashboardComparison from './DashboardComparison';
 import FinanceChat from './FinanceChat';
 import ProgressHistory from './ProgressHistory';
+import ProgressDetails from './ProgressDetails';
+import BackButton from './BackButton';
+import HistoryOptions from './HistoryOptions';
 
 function App() {
   return (
-    <Routes>
-      <Route path ="/" element={<Register />} />
-      <Route path ="/home" element={<Home />} />
-      <Route path ="/login" element={<Login />} />
-      <Route path="/expense-categorisation" element={<ExpenseCategorisation />} />
-      <Route path ="/history" element={<TransactionHistory />} />
-      <Route path="/history/:id" element={<DashboardDetails />} />
-      <Route path="/set-budget" element={<SetBudget />} />
-      <Route path="/progress" element={<ProgressPage />} />
-      <Route path="/compare-dashboards" element={<DashboardComparison />} />
-      <Route path="/finance-chat" element={<FinanceChat />} />
-      <Route path="/progress-history" element={<ProgressHistory />} />
-    </Routes>
+    <>
+      <BackButton />
+      <Routes>
+        <Route path ="/" element={<Register />} />
+        <Route path ="/home" element={<Home />} />
+        <Route path ="/login" element={<Login />} />
+        <Route path="/expense-categorisation" element={<ExpenseCategorisation />} />
+        <Route path ="/history" element={<TransactionHistory />} />
+        <Route path="/history/:id" element={<DashboardDetails />} />
+        <Route path="/set-budget" element={<SetBudget />} />
+        <Route path="/progress" element={<ProgressPage />} />
+        <Route path="/compare-dashboards" element={<DashboardComparison />} />
+        <Route path="/finance-chat" element={<FinanceChat />} />
+        <Route path="/progress-history" element={<ProgressHistory />} />
+        <Route path="/progress-history/:id" element={<ProgressDetails />} />
+        <Route path="/back" element={<BackButton />} />
+        <Route path="/history-options" element={<HistoryOptions />} />
+      </Routes>
+    </>
   );
 }
 

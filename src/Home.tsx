@@ -33,12 +33,6 @@ const Home: React.FC = () => {
               Put my expenditure into categories
             </button>
             <button
-              className="w-full bg-teal-500 text-white py-3 rounded hover:bg-teal-600 transition"
-              onClick={() => navigate("/budget-tips")}
-            >
-              Get Budgeting Tips
-            </button>
-            <button
               className="w-full bg-rose-500 text-white py-3 rounded hover:bg-rose-600 transition"
               onClick={() => navigate("/progress")}
             >
@@ -46,7 +40,7 @@ const Home: React.FC = () => {
             </button>
             <button
               className="w-full bg-purple-500 text-white py-3 rounded hover:bg-purple-600 transition"
-              onClick={() => navigate("/history")}
+              onClick={() => navigate("/history-options")}
             >
               View my Transaction History
             </button>
