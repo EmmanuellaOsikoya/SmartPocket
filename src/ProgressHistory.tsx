@@ -27,6 +27,16 @@ const ProgressHistory: React.FC = () => {
         Past Progress Reports
       </h1>
 
+      <div className="flex justify-left mb-8">
+      <button
+        onClick={() => navigate("/progress")}
+        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+      >
+        Check Progress from Another Month
+      </button>
+    </div>
+
+
       {history.length === 0 ? (
         <p className="text-center text-gray-500">
           No progress reports found.

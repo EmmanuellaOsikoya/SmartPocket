@@ -34,7 +34,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
       {/* Toggle button - always visible */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed top-4 left-4 z-50 bg-gray-800 text-white p-2 rounded hover:bg-gray-700 transition"
+        className="fixed top-4 right-4 z-50 bg-gray-800 text-white p-2 rounded hover:bg-gray-700 transition"
       >
         {isOpen ? (
           // Close icon
@@ -51,8 +51,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
 
       {/* Sidebar - slides in from left */}
       <div
-        className={`fixed top-0 left-0 w-64 h-screen bg-gray-900 text-white flex flex-col p-6 z-40 transition-transform duration-300 ${
-          isOpen ? "translate-x-0" : "-translate-x-full"
+        className={`fixed top-0 right-0 w-64 h-screen bg-gray-900 text-white flex flex-col p-6 z-40 transition-transform duration-300 ${
+          isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
         {/* APP NAME */}
@@ -67,6 +67,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
             {email}
           </p>
         </div>
+
+        <button
+            onClick={() => navigate("/finance-chat")}
+            className="text-left px-4 py-2 rounded hover:bg-gray-800 transition"
+        >
+            Budget Chat
+        </button>
+
 
         {/* LOGOUT BUTTON */}
         <button

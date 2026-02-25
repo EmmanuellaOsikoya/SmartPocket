@@ -310,6 +310,12 @@ const ProgressPage: React.FC = () => {
             >
               Update Budget
             </button>
+             <button
+            onClick={() => navigate("/progress-history")}
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+          >
+            View Previous Progress Reports
+          </button>
 
           </div>
         </div>

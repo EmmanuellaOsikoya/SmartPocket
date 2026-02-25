@@ -30,19 +30,7 @@ const Home: React.FC = () => {
               className="w-full bg-blue-500 text-white py-3 rounded hover:bg-blue-600 transition"
               onClick={() => navigate("/expense-categorisation")}
             >
-              Put my expenditure into categories
-            </button>
-            <button
-              className="w-full bg-rose-500 text-white py-3 rounded hover:bg-rose-600 transition"
-              onClick={() => navigate("/progress")}
-            >
-              Track my Spending
-            </button>
-            <button
-              className="w-full bg-purple-500 text-white py-3 rounded hover:bg-purple-600 transition"
-              onClick={() => navigate("/history-options")}
-            >
-              View my Transaction History
+              Track Expenditure
             </button>
             <button
               className="w-full bg-amber-500 text-white py-3 rounded hover:bg-amber-600 transition"
@@ -51,11 +39,23 @@ const Home: React.FC = () => {
               Set Budget
             </button>
             <button
+              className="w-full bg-rose-500 text-white py-3 rounded hover:bg-rose-600 transition"
+              onClick={() => navigate("/progress")}
+            >
+              Track my Budget
+            </button>
+            <button
               className="w-full bg-indigo-500 text-white py-3 rounded hover:bg-indigo-600 transition"
               onClick={() => navigate("/compare-dashboards")}
           >
-            Compare Dashboards
+            Compare Expenditure
           </button>
+          <button
+              className="w-full bg-purple-500 text-white py-3 rounded hover:bg-purple-600 transition"
+              onClick={() => navigate("/history-options")}
+            >
+              History
+            </button>
           </div>
         </div>
       </div>

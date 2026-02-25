@@ -2,6 +2,7 @@
 // imports needed for this file
 import React, { useState, DragEvent, ChangeEvent} from 'react';
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { useNavigate } from "react-router-dom";
 
 // Colours for categories and pie chart slices
 const CATEGORY_COLORS: Record<string, string> = {
@@ -26,6 +27,8 @@ const ExpenseCategorisation: React.FC = () => {
 
     // Stores categorisation results from backend
     const [results, setResults] = useState<any | null>(null);
+
+    const navigate = useNavigate();
 
     // This is triggered when a file is dragged over the dropping zone
     const handleDrag = (e: DragEvent<HTMLDivElement>) => {
@@ -186,6 +189,8 @@ return (
         </button>
 
         {/* RESULTS */}
+
+
         {results && (
           <div className="mt-10 grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* INCOME */}
@@ -295,9 +300,15 @@ return (
                       <Legend />
                     </PieChart>
                   </ResponsiveContainer>
-
+                  
                 </div>
               </div>
+                <button
+                  onClick={() => navigate("/history")}
+                  className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+                >
+                  View Previous Dashboards
+                </button>
             </div>
           </div>
         )}
