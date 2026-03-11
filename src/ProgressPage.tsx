@@ -111,7 +111,7 @@ const ProgressPage: React.FC = () => {
       {hasBudget === true && !results && (
         <div className="bg-white p-8 rounded shadow text-center max-w-xl mx-auto">
           <p className="mb-4 font-medium text-lg">
-            Upload your bank statement to track budget progress
+            Upload your bank statement to track budget progress and to receive a comprehensive report
           </p>
 
           <input

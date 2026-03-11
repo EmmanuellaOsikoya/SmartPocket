@@ -1,15 +1,10 @@
 import React from "react";
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Sidebar from "./sidebar";
 
 const Home: React.FC = () => {
     const navigate = useNavigate();
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     return (
     // Wrap everything in a parent container
-    <>
-      <Sidebar isOpen={isSidebarOpen} setIsOpen={setIsSidebarOpen} />
 
       <div
         className="relative min-h-screen flex flex-col items-center justify-center bg-cover bg-center"
@@ -59,7 +54,6 @@ const Home: React.FC = () => {
           </div>
         </div>
       </div>
-    </>
   );
 };
 

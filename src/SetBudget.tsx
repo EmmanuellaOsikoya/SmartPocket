@@ -118,7 +118,6 @@ const SetBudget: React.FC = () => {
 
       const data = await res.json();
       alert(data.message || "Budget saved successfully!");
-      navigate("/home");
     } catch (err) {
       console.error("Error:", err);
       alert("Error saving budget");
