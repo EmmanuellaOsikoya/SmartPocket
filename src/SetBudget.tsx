@@ -7,8 +7,6 @@ const SetBudget: React.FC = () => {
   const location = useLocation();
   const passedMonth = (location.state as any)?.month;
 
-
-  // These categories should be identical to what you use in categorisation
   const CATEGORIES = [
     "Groceries",
     "Transport",
@@ -19,59 +17,49 @@ const SetBudget: React.FC = () => {
     "Other",
   ];
 
-  // Selected month state
   const [selectedMonth, setSelectedMonth] = useState<string>("");
-
-  // Total budget field
   const [totalBudget, setTotalBudget] = useState<number>(0);
-
-  // Category budgets stored as object
-  const [budgetByCategory, setBudgetByCategory] = useState<{ [key: string]: number }>(
-    {}
-  );
-
+  const [budgetByCategory, setBudgetByCategory] = useState<{ [key: string]: number }>({});
   const [loading, setLoading] = useState(false);
 
-  // Prefill all categories to zero and set default month
+  // ---------- INITIAL SETUP ----------
   useEffect(() => {
-  const initial = Object.fromEntries(CATEGORIES.map((c) => [c, 0]));
-  setBudgetByCategory(initial);
+    const initial = Object.fromEntries(CATEGORIES.map((c) => [c, 0]));
+    setBudgetByCategory(initial);
 
-  if (passedMonth) {
-    // If coming from Update Budget
-    setSelectedMonth(passedMonth);
-  } else {
-    // If creating brand new budget
-    const today = new Date();
-    const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
-    const defaultMonth = `${nextMonth.getFullYear()}-${String(
-      nextMonth.getMonth() + 1
-    ).padStart(2, "0")}`;
-    setSelectedMonth(defaultMonth);
-  }
-}, [passedMonth]);
+    if (passedMonth) {
+      setSelectedMonth(passedMonth);
+    } else {
+      const today = new Date();
+      const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
 
+      const defaultMonth = `${nextMonth.getFullYear()}-${String(
+        nextMonth.getMonth() + 1
+      ).padStart(2, "0")}`;
 
-  // Load existing budget when month changes
+      setSelectedMonth(defaultMonth);
+    }
+  }, [passedMonth]);
+
+  // ---------- LOAD BUDGET WHEN MONTH CHANGES ----------
   useEffect(() => {
     if (!selectedMonth) return;
 
     const loadBudget = async () => {
       const userId = localStorage.getItem("userId");
-      
+
       try {
         const res = await fetch(
           `http://127.0.0.1:8000/get-budget?userId=${userId}&month=${selectedMonth}`
         );
+
         const data = await res.json();
 
         if (data.hasBudget === false) {
-          // No budget for this month, reset to defaults
           const initial = Object.fromEntries(CATEGORIES.map((c) => [c, 0]));
           setBudgetByCategory(initial);
           setTotalBudget(0);
         } else {
-          // Budget exists, load it
           setTotalBudget(data.totalBudget || 0);
           setBudgetByCategory(data.categories || {});
         }
@@ -83,6 +71,7 @@ const SetBudget: React.FC = () => {
     loadBudget();
   }, [selectedMonth]);
 
+  // ---------- CATEGORY INPUT ----------
   const handleCategoryChange = (category: string, value: string) => {
     setBudgetByCategory((prev) => ({
       ...prev,
@@ -90,6 +79,7 @@ const SetBudget: React.FC = () => {
     }));
   };
 
+  // ---------- SAVE BUDGET ----------
   const handleSave = async () => {
     if (!selectedMonth) {
       alert("Please select a month");
@@ -118,6 +108,12 @@ const SetBudget: React.FC = () => {
 
       const data = await res.json();
       alert(data.message || "Budget saved successfully!");
+
+      // Reset form values so user can enter another budget
+      const initial = Object.fromEntries(CATEGORIES.map((c) => [c, 0]));
+      setBudgetByCategory(initial);
+      setTotalBudget(0);
+
     } catch (err) {
       console.error("Error:", err);
       alert("Error saving budget");
@@ -133,14 +129,16 @@ const SetBudget: React.FC = () => {
       {/* MONTH SELECTOR */}
       <div className="bg-white p-6 rounded-lg shadow mb-8">
         <label className="font-semibold text-lg">Select Month</label>
+
         <input
           type="month"
           className="w-full mt-3 p-3 border rounded"
           value={selectedMonth}
           onChange={(e) => setSelectedMonth(e.target.value)}
         />
+
         <p className="text-sm text-gray-600 mt-2">
-          {budgetByCategory && Object.values(budgetByCategory).some(v => v > 0)
+          {Object.values(budgetByCategory).some((v) => v > 0)
             ? "Budget exists for this month, you can update it if you would like"
             : "No budget set for this month yet"}
         </p>
@@ -149,6 +147,7 @@ const SetBudget: React.FC = () => {
       {/* TOTAL BUDGET */}
       <div className="bg-white p-6 rounded-lg shadow mb-8">
         <label className="font-semibold text-lg">Total Monthly Budget (€)</label>
+
         <input
           type="number"
           className="w-full mt-3 p-3 border rounded"
@@ -185,6 +184,7 @@ const SetBudget: React.FC = () => {
         >
           Cancel
         </button>
+
         <button
           onClick={handleSave}
           disabled={loading}

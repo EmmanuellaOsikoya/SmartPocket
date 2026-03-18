@@ -3,8 +3,13 @@ import { useNavigate } from "react-router-dom";
 
 const BudgetHistory: React.FC = () => {
   const navigate = useNavigate();
+
   const [budgets, setBudgets] = useState<any[]>([]);
+  const [filteredBudgets, setFilteredBudgets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [month, setMonth] = useState<number | "">("");
+  const [year, setYear] = useState<number | "">("");
 
   const userId = localStorage.getItem("userId");
 
@@ -13,9 +18,29 @@ const BudgetHistory: React.FC = () => {
 
     fetch(`http://127.0.0.1:8000/budget-history?userId=${userId}`)
       .then(res => res.json())
-      .then(data => setBudgets(data))
+      .then(data => {
+        setBudgets(data);
+        setFilteredBudgets(data); // default = all
+      })
       .finally(() => setLoading(false));
   }, [userId]);
+
+  // FILTER FUNCTION
+  const applyFilter = () => {
+    let filtered = [...budgets];
+
+    if (month || year) {
+      filtered = filtered.filter((budget) => {
+        const [y, m] = budget.month.split("-");
+        const matchesMonth = month ? Number(m) === month : true;
+        const matchesYear = year ? Number(y) === year : true;
+
+        return matchesMonth && matchesYear;
+      });
+    }
+
+    setFilteredBudgets(filtered);
+  };
 
   if (loading) {
     return (
@@ -32,21 +57,63 @@ const BudgetHistory: React.FC = () => {
       </h1>
 
       <div className="flex justify-left mb-8">
-      <button
-        onClick={() => navigate("/set-budget")}
-        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
-      >
-        Add New Budget
-      </button>
+        <button
+          onClick={() => navigate("/set-budget")}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+        >
+          Add New Budget
+        </button>
       </div>
 
-      {budgets.length === 0 ? (
+      {/* FILTER BAR */}
+      <div className="flex flex-wrap gap-4 mb-8 justify-center">
+        
+        {/* Month dropdown */}
+        <select
+          value={month}
+          onChange={(e) =>
+            setMonth(e.target.value ? Number(e.target.value) : "")
+          }
+          className="border rounded px-4 py-2"
+        >
+          <option value="">All Months</option>
+          {[...Array(12)].map((_, i) => (
+            <option key={i + 1} value={i + 1}>
+              {new Date(2000, i).toLocaleString("default", {
+                month: "long",
+              })}
+            </option>
+          ))}
+        </select>
+
+        {/* Year input */}
+        <input
+          type="number"
+          placeholder="Year"
+          value={year}
+          onChange={(e) =>
+            setYear(e.target.value ? Number(e.target.value) : "")
+          }
+          className="border rounded px-4 py-2 w-28"
+        />
+
+        {/* Apply filter */}
+        <button
+          onClick={applyFilter}
+          className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600"
+        >
+          Apply Filter
+        </button>
+      </div>
+
+      {/* RESULTS */}
+      {filteredBudgets.length === 0 ? (
         <p className="text-center text-gray-500">
-          No budgets saved yet.
+          No budgets found for selected period.
         </p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {budgets.map((budget) => {
+          {filteredBudgets.map((budget) => {
             const [year, month] = budget.month.split("-");
             const formattedMonth = new Date(
               Number(year),

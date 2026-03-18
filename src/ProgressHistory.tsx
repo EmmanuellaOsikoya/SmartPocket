@@ -3,8 +3,13 @@ import { useNavigate } from "react-router-dom";
 
 const ProgressHistory: React.FC = () => {
   const navigate = useNavigate();
+
   const [history, setHistory] = useState<any[]>([]);
+  const [filteredHistory, setFilteredHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [month, setMonth] = useState<number | "">("");
+  const [year, setYear] = useState<number | "">("");
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
@@ -12,10 +17,29 @@ const ProgressHistory: React.FC = () => {
     fetch(`http://127.0.0.1:8000/progress-history?userId=${userId}`)
       .then((res) => res.json())
       .then((data) => {
-        setHistory(data.reverse());
+        const reversed = data.reverse();
+        setHistory(reversed);
+        setFilteredHistory(reversed); // default = all
       })
       .finally(() => setLoading(false));
   }, []);
+
+  // FILTER FUNCTION
+  const applyFilter = () => {
+    let filtered = [...history];
+
+    if (month || year) {
+      filtered = filtered.filter((item) => {
+        const [y, m] = item.statement_month.split("-");
+        const matchesMonth = month ? Number(m) === month : true;
+        const matchesYear = year ? Number(y) === year : true;
+
+        return matchesMonth && matchesYear;
+      });
+    }
+
+    setFilteredHistory(filtered);
+  };
 
   if (loading) {
     return <div className="text-center mt-10">Loading progress reports...</div>;
@@ -28,22 +52,63 @@ const ProgressHistory: React.FC = () => {
       </h1>
 
       <div className="flex justify-left mb-8">
-      <button
-        onClick={() => navigate("/progress")}
-        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
-      >
-        Check Progress from Another Month
-      </button>
-    </div>
+        <button
+          onClick={() => navigate("/progress")}
+          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition"
+        >
+          Check Progress from Another Month
+        </button>
+      </div>
 
+      {/* FILTER BAR */}
+      <div className="flex flex-wrap gap-4 mb-8 justify-center">
+        
+        {/* Month dropdown */}
+        <select
+          value={month}
+          onChange={(e) =>
+            setMonth(e.target.value ? Number(e.target.value) : "")
+          }
+          className="border rounded px-4 py-2"
+        >
+          <option value="">All Months</option>
+          {[...Array(12)].map((_, i) => (
+            <option key={i + 1} value={i + 1}>
+              {new Date(2000, i).toLocaleString("default", {
+                month: "long",
+              })}
+            </option>
+          ))}
+        </select>
 
-      {history.length === 0 ? (
+        {/* Year input */}
+        <input
+          type="number"
+          placeholder="Year"
+          value={year}
+          onChange={(e) =>
+            setYear(e.target.value ? Number(e.target.value) : "")
+          }
+          className="border rounded px-4 py-2 w-28"
+        />
+
+        {/* Apply filter */}
+        <button
+          onClick={applyFilter}
+          className="bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600"
+        >
+          Apply Filter
+        </button>
+      </div>
+
+      {/* RESULTS */}
+      {filteredHistory.length === 0 ? (
         <p className="text-center text-gray-500">
-          No progress reports found.
+          No progress reports found for selected period.
         </p>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {history.map((item) => {
+          {filteredHistory.map((item) => {
             const [yearStr, monthStr] = item.statement_month.split("-");
             const dateObj = new Date(Number(yearStr), Number(monthStr) - 1);
             const formattedMonth = dateObj.toLocaleString("default", {
