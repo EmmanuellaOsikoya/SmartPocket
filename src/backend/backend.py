@@ -1,4 +1,6 @@
 # imports needed for backend.py
+from unittest import result
+
 from fastapi import FastAPI, File, UploadFile, Form
 from fastapi.middleware.cors import CORSMiddleware
 import pdfplumber
@@ -9,6 +11,11 @@ from fastapi import HTTPException
 from bson.objectid import ObjectId
 from fastapi import Query
 from passlib.context import CryptContext
+from dotenv import load_dotenv
+import os
+
+# Load environment variables
+load_dotenv()
 
 # Initialises FastAPI application
 app = FastAPI()
@@ -402,12 +409,13 @@ def save_budget(payload: dict):
     }
     
 @app.get("/has-budget")
-def has_budget(userId: str):
-    """
-    Checks if the user has at least one budget saved.
-    Used by ProgressPage before allowing statement upload.
-    """
-    budget = budgets.find_one({"userId": userId})
+def has_budget(userId: str, month: str | None = Query(None)):
+    if month:
+        # Check specific month
+        budget = budgets.find_one({"userId": userId, "month": month})
+    else:
+        # Check if user has ANY budget
+        budget = budgets.find_one({"userId": userId})
 
     return {
         "hasBudget": budget is not None
@@ -491,16 +499,16 @@ async def upload_progress(
             })
 
     # Final response
-        record = {
-        "userId": userId,
-        "timestamp": datetime.utcnow().isoformat(),
-        "statement_month": current_month,
-        "budgetMonth": budget["month"],
-        "currentTotal": total_outcome,
-        "budgetTotal": budget["totalBudget"],
-        "overallOverUnder": total_outcome - budget["totalBudget"],
-        "categories": category_comparison
-    }
+    record = {
+    "userId": userId,
+    "timestamp": datetime.utcnow().isoformat(),
+    "statement_month": current_month,
+    "budgetMonth": budget["month"],
+    "currentTotal": total_outcome,
+    "budgetTotal": budget["totalBudget"],
+    "overallOverUnder": total_outcome - budget["totalBudget"],
+    "categories": category_comparison
+}
 
     inserted = progress_reports.insert_one(record)
 
@@ -513,7 +521,7 @@ async def upload_progress(
 import requests
 from fastapi import HTTPException
 
-HF_API_TOKEN = "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"
+HF_API_TOKEN = os.getenv("HF_API_TOKEN")
 HF_MODEL_URL = "https://router.huggingface.co/v1/chat/completions"
 
 headers = {
@@ -524,52 +532,100 @@ headers = {
 @app.post("/finance-chat")
 async def chat_with_llm(data: dict):
     user_message = data.get("message")
+    user_id = data.get("userId")
 
-    if not user_message:
-        raise HTTPException(status_code=400, detail="Message is required")
+    if not user_message or not user_id:
+        raise HTTPException(status_code=400, detail="Missing data")
+
+    latest_dashboard = dashboards.find_one({"userId": user_id}, sort=[("statement_month", -1)])
+    latest_budget = budgets.find_one({"userId": user_id}, sort=[("month", -1)])
+    latest_progress = progress_reports.find_one({"userId": user_id}, sort=[("statement_month", -1)])
+
+    context = "User financial summary:\n"
+
+    if latest_dashboard:
+        context += f"- Last month income: €{latest_dashboard['total_income']:.2f}\n"
+        context += f"- Last month spending: €{latest_dashboard['total_outcome']:.2f}\n"
+        context += f"- Net balance: €{latest_dashboard['net_balance']:.2f}\n"
+        if "categories" in latest_dashboard:
+            top_cat = max(latest_dashboard["categories"], key=latest_dashboard["categories"].get)
+            context += f"- Top spending category: {top_cat}\n"
+            context += "- Spending by category:\n"
+            for cat, amount in latest_dashboard["categories"].items():
+                context += f"  - {cat}: €{amount:.2f}\n"
+
+    if latest_budget:
+        context += f"- Monthly budget total: €{latest_budget['totalBudget']:.2f}\n"
+        if "categories" in latest_budget:
+            context += "- Budget by category:\n"
+            for cat, amount in latest_budget["categories"].items():
+                context += f"  - {cat}: €{amount:.2f}\n"
+
+    if latest_progress:
+        over_under = latest_progress["overallOverUnder"]
+        status = "over budget" if over_under > 0 else "under budget"
+        context += f"- Currently {status} by €{abs(over_under):.2f}\n"
 
     payload = {
-        "model": "meta-llama/Llama-3.2-3B-Instruct", 
-        
+        "model": "Qwen/Qwen2.5-72B-Instruct",
         "messages": [
             {
                 "role": "system",
-                "content": "You are a helpful financial assistant for SmartPocket, a budgeting app. Provide clear, concise advice about budgeting, saving, and spending."
+                "content": f"""You are a helpful personal financial assistant for SmartPocket, a budgeting app.
+Use the user's real financial data below to give specific, personalised advice.
+Be concise, friendly, and practical. Always refer to amounts in euros (€).
+
+{context}"""
             },
             {
                 "role": "user",
                 "content": user_message
             }
         ],
-        "max_tokens": 150,
+        "max_tokens": 200,
         "temperature": 0.7
     }
 
     try:
-        response = requests.post(
-            HF_MODEL_URL,
-            headers=headers,
-            json=payload,
-            timeout=60
-        )
+        response = requests.post(HF_MODEL_URL, headers=headers, json=payload, timeout=60)
 
         print("STATUS CODE:", response.status_code)
-        print("RAW TEXT:", response.text)
+        print("RAW RESPONSE:", repr(response.text))
+
+        # Check for non-200 status before trying to parse JSON
+        if response.status_code == 404:
+            raise HTTPException(500, "Model endpoint not found - check the URL")
+        
+        if response.status_code == 503 or not response.text.strip():
+            return {"response": "The AI model is warming up. Please wait 20 seconds and try again."}
 
         if response.status_code != 200:
-            raise HTTPException(
-                status_code=response.status_code,
-                detail=f"HuggingFace error: {response.text}"
-            )
+            return {"response": f"HuggingFace returned status {response.status_code}: {response.text}"}
 
         result = response.json()
-        
-        if "choices" in result and len(result["choices"]) > 0:
-            reply = result["choices"][0]["message"]["content"]
-        else:
-            reply = "Sorry, I couldn't generate a response."
+        print("HF RESPONSE:", result)
 
+        if isinstance(result, dict) and "error" in result:
+            error_msg = result["error"]
+            if "loading" in error_msg.lower():
+                return {"response": "The AI model is loading. Please wait 20 seconds and try again."}
+            raise HTTPException(500, f"HuggingFace error: {error_msg}")
+
+        reply = result["choices"][0]["message"]["content"]
         return {"response": reply}
 
-    except requests.exceptions.RequestException as e:
-        raise HTTPException(status_code=500, detail=f"Request failed: {str(e)}")
+    except HTTPException:
+        raise
+    except Exception as e:
+        print("ERROR:", e)
+        raise HTTPException(500, str(e))
+    
+    
+@app.get("/budget-history")
+def get_budget_history(userId: str):
+    records = list(budgets.find({"userId": userId}).sort("month", -1))
+    
+    for r in records:
+        r["_id"] = str(r["_id"])
+    
+    return records

@@ -10,6 +10,10 @@ const FinanceChat: React.FC = () => {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const handlePromptClick = (prompt: string) => {
+  setInput(prompt);
+};
+
   const sendMessage = async () => {
     if (!input.trim()) return;
 
@@ -86,6 +90,22 @@ const FinanceChat: React.FC = () => {
           </div>
         ))}
       </div>
+
+      <div className="mb-4 flex flex-wrap gap-2">
+        {[
+          "Why did I overspend last month?",
+          "How can I reduce my food spending?",
+          "Am I improving financially?",
+        ].map((prompt, i) => (
+          <button
+            key={i}
+            onClick={() => handlePromptClick(prompt)}
+            className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-3 py-2 rounded-full text-sm"
+          >
+            {prompt}
+          </button>
+        ))}
+      </div>        
 
       {/* INPUT */}
       <div className="flex gap-2">

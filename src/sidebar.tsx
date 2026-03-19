@@ -75,6 +75,40 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
             Budget Chat
         </button>
 
+        <button
+            onClick={() => navigate("/expense-categorisation")}
+            className="text-left px-4 py-2 rounded hover:bg-gray-800 transition"
+        >
+            Track Expenditure
+        </button>
+
+        <button
+            onClick={() => navigate("/set-budget")}
+            className="text-left px-4 py-2 rounded hover:bg-gray-800 transition"
+        >
+            Set Budget
+        </button>
+
+        <button
+            onClick={() => navigate("/progress")}
+            className="text-left px-4 py-2 rounded hover:bg-gray-800 transition"
+        >
+            Track My Budget
+        </button>
+
+        <button
+            onClick={() => navigate("/compare-dashboards")}
+            className="text-left px-4 py-2 rounded hover:bg-gray-800 transition"
+        >
+            Compare Expenditure
+        </button>
+
+        <button
+            onClick={() => navigate("/history-options")}
+            className="text-left px-4 py-2 rounded hover:bg-gray-800 transition"
+        >
+            History
+        </button>  
 
         {/* LOGOUT BUTTON */}
         <button
