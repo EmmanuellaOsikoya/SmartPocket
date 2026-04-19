@@ -6,11 +6,13 @@ interface Props {
   showActions?: boolean;
 }
 
+// Component to display the progress report details for a specific month
 const ProgressReportView: React.FC<Props> = ({
   results,
   onReset,
   showActions = false,
 }) => {
+  // If no results are passed, render nothing
   if (!results) return null;
 
 

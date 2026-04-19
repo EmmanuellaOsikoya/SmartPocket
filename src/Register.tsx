@@ -1,15 +1,17 @@
 // This is the registration page component that allows new users to create an account
-// I will only be using placeholder logic as of right now till the backend is implemented
 
 // imports needed for this page
 import React, { useState } from 'react';
 import {useNavigate} from 'react-router-dom';
 
 const Register: React.FC = () => {
+  // Hook to programmatically navigate between routes
     const navigate = useNavigate();
+  // State to store form input values for email and password  
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+    // Function to handle registration form submission
     const handleRegister = async () => {
   try {
     const res = await fetch("http://127.0.0.1:8000/register", {
@@ -18,16 +20,19 @@ const Register: React.FC = () => {
         "Content-Type": "application/json",
       },
       credentials: "include",
-      body: JSON.stringify({ email, password }),
+      body: JSON.stringify({ email, password }), // Sends form data as JSON
     });
 
+    // Parse response from backend
     const data = await res.json();
 
+    // Handle failed registration response
     if (!res.ok) {
       alert(data.detail || "Registration failed");
       return;
     }
 
+    // On successful registration, show success message and navigate to login page
     alert("Account created!");
     navigate("/home");
   } catch (err) {
