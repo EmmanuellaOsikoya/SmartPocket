@@ -1,33 +1,43 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+// Component displays a list of past progress reports
 const ProgressHistory: React.FC = () => {
+  // Hook for navigation between routes
   const navigate = useNavigate();
 
+  // States to store progress history, filtered results, loading status, and filter criteria
   const [history, setHistory] = useState<any[]>([]);
   const [filteredHistory, setFilteredHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Filter inputs month and year
   const [month, setMonth] = useState<number | "">("");
   const [year, setYear] = useState<number | "">("");
 
+  // Fetch progress history on component mount
   useEffect(() => {
     const userId = localStorage.getItem("userId");
 
     fetch(`http://127.0.0.1:8000/progress-history?userId=${userId}`)
       .then((res) => res.json())
       .then((data) => {
+        // Reverse data so most recent appears first
         const reversed = data.reverse();
+        // Store full dataset
         setHistory(reversed);
-        setFilteredHistory(reversed); // default = all
+        // Initially show all data (unfiltered)
+        setFilteredHistory(reversed); 
       })
+      // Stop loading once fetch completes
       .finally(() => setLoading(false));
   }, []);
 
-  // FILTER FUNCTION
+  // Filters reports by selected month/year
   const applyFilter = () => {
     let filtered = [...history];
 
+    // Only apply filter if at least one filter is selected
     if (month || year) {
       filtered = filtered.filter((item) => {
         const [y, m] = item.statement_month.split("-");
@@ -38,6 +48,7 @@ const ProgressHistory: React.FC = () => {
       });
     }
 
+    // Update filtered results
     setFilteredHistory(filtered);
   };
 
