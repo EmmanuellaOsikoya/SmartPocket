@@ -1,16 +1,21 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+// BudgetHistory component displays a list of past budgets with filtering options
 const BudgetHistory: React.FC = () => {
+  // Hook for navigation between routes
   const navigate = useNavigate();
 
+  // State variables to hold budgets, filtered budgets, loading status, and filter criteria
   const [budgets, setBudgets] = useState<any[]>([]);
   const [filteredBudgets, setFilteredBudgets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Filter criteria for month and year
   const [month, setMonth] = useState<number | "">("");
   const [year, setYear] = useState<number | "">("");
 
+  // Fetches budget history from the backend API when the component mounts
   const userId = localStorage.getItem("userId");
 
   useEffect(() => {
@@ -19,19 +24,23 @@ const BudgetHistory: React.FC = () => {
     fetch(`http://127.0.0.1:8000/budget-history?userId=${userId}`)
       .then(res => res.json())
       .then(data => {
+        // Reverses the order to show most recent budgets first and updates state
         setBudgets(data);
         setFilteredBudgets(data); // default = all
       })
       .finally(() => setLoading(false));
   }, [userId]);
 
-  // FILTER FUNCTION
+  // Filters the budgets based on selected month and year, updating the filteredBudgets state
   const applyFilter = () => {
     let filtered = [...budgets];
 
+    // Only filter if at least one filter is selected
     if (month || year) {
       filtered = filtered.filter((budget) => {
+        // Budget month format assumed to be "YYYY-MM", so we split it to get year and month
         const [y, m] = budget.month.split("-");
+        // Checks if the budget matches the selected month and year (if provided)
         const matchesMonth = month ? Number(m) === month : true;
         const matchesYear = year ? Number(y) === year : true;
 
@@ -39,9 +48,11 @@ const BudgetHistory: React.FC = () => {
       });
     }
 
+    // Updates the state with the filtered budgets
     setFilteredBudgets(filtered);
   };
 
+  // Shows a loading message while fetching data
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-600">
