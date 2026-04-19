@@ -1,32 +1,41 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+// Component that shows past financial dashboard entries based on user ID and optional month/year filters
 const TransactionHistory: React.FC = () => {
   const navigate = useNavigate();
 
+  // State variables to hold transaction history, loading status, and filter criteria
   const [history, setHistory] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [month, setMonth] = useState<number | "">("");
   const [year, setYear] = useState<number | "">("");
 
+  // Function to fetch transaction history from the backend API with optional month/year filters
   const fetchHistory = () => {
   setLoading(true);
 
+  // Get user ID from local storage to identify which user's history to fetch
   const userId = localStorage.getItem("userId");
 
+  // If no user ID is found, alert the user and exit the function
   if (!userId) {
     alert("You must be logged in to view transaction history.");
     return;
   }
 
+  // Base API URL
   let url = `http://127.0.0.1:8000/history?userId=${userId}`;
 
+  // Build query parameters dynamically
   const params = [];
   if (month) params.push(`&month=${month}`);
   if (year) params.push(`&year=${year}`);
 
+  // Append filters if they exist
   if (params.length > 0) url += "&" + params.join("&");
 
+  // Fetch data from backend
   fetch(url)
     .then((res) => res.json())
     .then((data) => {
@@ -37,14 +46,17 @@ const TransactionHistory: React.FC = () => {
         setHistory([]);
       }
     })
+    // Handle any errors that occur during the fetch
     .finally(() => setLoading(false));
 };
 
 
+  // Fetch history on first component load
   useEffect(() => {
   fetchHistory();
 }, []);
 
+  // Show loading state while data is being fetched
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center text-gray-600">

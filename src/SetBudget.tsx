@@ -2,11 +2,15 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 
+// SetBudget component allows users to set or update their monthly budget and category breakdown
 const SetBudget: React.FC = () => {
+  // Hooks to navigate between routes and access current route location
   const navigate = useNavigate();
+  // Accesses the current route location to check if a month was passed as state (e.g., from history page)
   const location = useLocation();
   const passedMonth = (location.state as any)?.month;
 
+  // Predefined categories for budget breakdown
   const CATEGORIES = [
     "Groceries",
     "Transport",
@@ -17,19 +21,23 @@ const SetBudget: React.FC = () => {
     "Other",
   ];
 
+  // State variables to hold selected month, total budget, category breakdown, and loading status
   const [selectedMonth, setSelectedMonth] = useState<string>("");
   const [totalBudget, setTotalBudget] = useState<number>(0);
   const [budgetByCategory, setBudgetByCategory] = useState<{ [key: string]: number }>({});
   const [loading, setLoading] = useState(false);
 
-  // ---------- INITIAL SETUP ----------
+  
   useEffect(() => {
+    // Initialize category budgets to 0 and set default month to next month if not passed from history page
     const initial = Object.fromEntries(CATEGORIES.map((c) => [c, 0]));
     setBudgetByCategory(initial);
 
     if (passedMonth) {
+      // If a month was passed via route state (e.g., from history page), use that as the selected month
       setSelectedMonth(passedMonth);
     } else {
+      // Otherwise, default to the next month
       const today = new Date();
       const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1);
 
@@ -41,7 +49,7 @@ const SetBudget: React.FC = () => {
     }
   }, [passedMonth]);
 
-  // ---------- LOAD BUDGET WHEN MONTH CHANGES ----------
+  // Load existing budget when month changes
   useEffect(() => {
     if (!selectedMonth) return;
 
@@ -49,6 +57,7 @@ const SetBudget: React.FC = () => {
       const userId = localStorage.getItem("userId");
 
       try {
+        // Fetch budget for selected month
         const res = await fetch(
           `http://127.0.0.1:8000/get-budget?userId=${userId}&month=${selectedMonth}`
         );
@@ -56,10 +65,12 @@ const SetBudget: React.FC = () => {
         const data = await res.json();
 
         if (data.hasBudget === false) {
+          // If no budget exists for this month, reset category budgets and total budget to 0
           const initial = Object.fromEntries(CATEGORIES.map((c) => [c, 0]));
           setBudgetByCategory(initial);
           setTotalBudget(0);
         } else {
+          // If a budget exists, populate the form with the existing values
           setTotalBudget(data.totalBudget || 0);
           setBudgetByCategory(data.categories || {});
         }
@@ -71,7 +82,7 @@ const SetBudget: React.FC = () => {
     loadBudget();
   }, [selectedMonth]);
 
-  // ---------- CATEGORY INPUT ----------
+  // Category Input
   const handleCategoryChange = (category: string, value: string) => {
     setBudgetByCategory((prev) => ({
       ...prev,
@@ -79,7 +90,7 @@ const SetBudget: React.FC = () => {
     }));
   };
 
-  // ---------- SAVE BUDGET ----------
+  // Save the budget to the backend API and handle the response
   const handleSave = async () => {
     if (!selectedMonth) {
       alert("Please select a month");
@@ -88,6 +99,7 @@ const SetBudget: React.FC = () => {
 
     setLoading(true);
 
+    // Prepare payload for API
     const payload = {
       userId: localStorage.getItem("userId"),
       month: selectedMonth,
@@ -96,6 +108,7 @@ const SetBudget: React.FC = () => {
     };
 
     try {
+      // Send POST request to save the budget
       const res = await fetch("http://127.0.0.1:8000/save-budget", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -107,6 +120,7 @@ const SetBudget: React.FC = () => {
       }
 
       const data = await res.json();
+      // Show success message from backend response or default message
       alert(data.message || "Budget saved successfully!");
 
       // Reset form values so user can enter another budget
