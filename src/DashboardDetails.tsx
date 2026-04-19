@@ -1,12 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
+// Recharts components for visualizing category data
 import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
+// Component that displays a full breakdown of a saved dashboard
 const DashboardDetails: React.FC = () => {
+  // Get the dahsboard ID from the URL parameters and set up state for the dashboard data and loading status
   const { id } = useParams();
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
+  // Fetch dashboard data when component mounts or ID changes
   useEffect(() => {
     fetch(`http://127.0.0.1:8000/history/${id}`)
       .then((res) => res.json())
@@ -15,6 +19,7 @@ const DashboardDetails: React.FC = () => {
       .finally(() => setLoading(false));
   }, [id]);
 
+  // Show loading screen while data is being fetched
   if (loading) {
     return (
       <div className="min-h-screen flex justify-center items-center text-gray-600">
@@ -23,20 +28,23 @@ const DashboardDetails: React.FC = () => {
     );
   }
 
+  // Handle case where no data is returned
   if (!data) {
     return <div>Dashboard not found.</div>;
   }
 
+  // Extract key financial values
   const totalIncome = data.total_income;
   const totalOutcome = data.total_outcome;
   const netBalance = data.net_balance;
 
-  // Pie chart: transform categories → array
+  // Transform category data into format suitable for the pie chart
   const categoryData = Object.entries(data.categories).map(([name, value]) => ({
     name,
     value,
   }));
 
+  // Predefined colors for the pie chart slices
   const COLORS = [
     "#2563eb",
     "#dc2626",
