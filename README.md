@@ -1,46 +1,165 @@
-# Getting Started with Create React App
+# SmartPocket – Personal Finance Tracker
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+SmartPocket is a full-stack personal finance application that allows users to track income and expenses, set budgets, analyse spending behaviour, and receive AI-powered financial insights.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## Features
 
-### `npm start`
+- Track income and expenses  
+- Categorise transactions automatically  
+- Create and manage monthly budgets  
+- View interactive financial dashboards  
+- AI-powered financial assistant (Hugging Face integration)  
+- Progress tracking and reporting  
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+---
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## Tech Stack
 
-### `npm test`
+- Frontend: React, TypeScript, Tailwind CSS, Recharts  
+- Backend: FastAPI (Python)  
+- Database: MongoDB (local instance)  
+- AI Integration: Hugging Face Transformers  
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## Project Setup
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### 1. Clone the Repository
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+git clone https://github.com/EmmanuellaOsikoya/SmartPocket.git
+cd SmartPocket
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+---
 
-### `npm run eject`
+### 2. Create a Virtual Environment (venv)
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+The virtual environment is not included in the repository and must be created locally.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+```bash
+python -m venv venv
+```
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+#### Activate it:
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+**Windows**
+```bash
+venv\Scripts\activate
+```
 
-## Learn More
+**Mac/Linux**
+```bash
+source venv/bin/activate
+```
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+---
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+### 3. Database Setup (Local MongoDB)
+
+This project uses a local MongoDB instance. Each user runs their own database.
+
+#### Install MongoDB
+
+Download MongoDB Community Edition:  
+https://www.mongodb.com/try/download/community
+
+#### Start MongoDB
+
+```bash
+mongod
+```
+
+MongoDB will run on:
+
+```
+mongodb://localhost:27017
+```
+
+#### Database Usage
+
+The application will automatically create the database:
+
+```
+smartpocket
+```
+
+when the backend is running and data is added.
+
+#### Optional: Load Sample Data
+
+```bash
+mongorestore database-dump/
+```
+
+---
+
+### 5. Environment Variables (.env)
+
+Create a `.env` file in the backend root folder:
+
+```bash
+touch .env
+```
+
+Add the following:
+
+```env
+MONGO_URI=mongodb://localhost:27017/smartpocket
+HUGGINGFACE_TOKEN=your_token_here
+```
+
+#### .env Example
+
+Create a `.env.example` file:
+
+```env
+MONGO_URI=mongodb://localhost:27017/smartpocket
+HUGGINGFACE_TOKEN=your_token_here
+```
+
+---
+
+### 6. Hugging Face Token Setup
+
+This project uses Hugging Face for AI-powered financial insights.
+
+Steps:
+
+1. Go to https://huggingface.co  
+2. Create an account or log in  
+3. Go to Settings  
+4. Select "Access Tokens"  
+5. Click "New Token"  
+6. Set:
+   - Name: smartpocket  
+   - Role: Write  
+7. Copy the token  
+
+Add it to your `.env` file:
+
+```env
+HUGGINGFACE_TOKEN=hf_xxxxxxxxxxxxxxxxx
+```
+
+---
+
+### 7. Run the Backend
+
+```bash
+uvicorn main:app --reload
+```
+
+---
+
+### 8. Run the Frontend
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+---
