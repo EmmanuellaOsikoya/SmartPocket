@@ -40,6 +40,7 @@ cd SmartPocket
 The virtual environment is not included in the repository and must be created locally.
 
 ```bash
+cd backend
 python -m venv venv
 ```
 
@@ -57,43 +58,22 @@ source venv/bin/activate
 
 ---
 
-### 3. Database Setup (Local MongoDB)
+### 3. Database Setup (MongoDB)
 
-This project uses a local MongoDB instance. Each user runs their own database.
+- Go to MongoDB Atlas https://www.mongodb.com/
+- Create an account/Sign in
+- Go to Identity & Access -> All Projects
+- Click New Project -> Give your project a name
+- Click Create Project
+- Create Cluster
+- Click Free -> Click Create Deployment
+- Create a database user & password -> Choose Connection Method
+- Install MongoDB Compass
+- Copy the provided connection string and replace 
 
-#### Install MongoDB
+with your connection string 
 
-Download MongoDB Community Edition:  
-https://www.mongodb.com/try/download/community
-
-#### Start MongoDB
-
-```bash
-mongod
-```
-
-MongoDB will run on:
-
-```
-mongodb://localhost:27017
-```
-
-#### Database Usage
-
-The application will automatically create the database:
-
-```
-smartpocket
-```
-
-when the backend is running and data is added.
-
-#### Optional: Load Sample Data
-
-```bash
-mongorestore database-dump/
-```
-
+- Create a connection on MongoDB Compass with your connection string
 ---
 
 ### 5. Environment Variables (.env)
@@ -107,7 +87,7 @@ touch .env
 Add the following:
 
 ```env
-MONGO_URI=mongodb://localhost:27017/smartpocket
+MONGO_URI=your_connection_string_here
 HUGGINGFACE_TOKEN=your_token_here
 ```
 
@@ -157,9 +137,9 @@ uvicorn main:app --reload
 ### 8. Run the Frontend
 
 ```bash
-cd frontend
+cd src
 npm install
-npm run dev
+npm start
 ```
 
 ---
