@@ -129,5 +129,5 @@ cd src
 npm install
 npm start
 ```
-Use the sample bank statements in the public folder to test various features in SmartPocket
+- Use the sample bank statements in the public folder to test various features in SmartPocket
 ---
