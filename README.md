@@ -90,18 +90,6 @@ Add the following:
 MONGO_URI=your_connection_string_here
 HUGGINGFACE_TOKEN=your_token_here
 ```
-
-#### .env Example
-
-Create a `.env.example` file:
-
-```env
-MONGO_URI=mongodb://localhost:27017/smartpocket
-HUGGINGFACE_TOKEN=your_token_here
-```
-
----
-
 ### 6. Hugging Face Token Setup
 
 This project uses Hugging Face for AI-powered financial insights.
@@ -141,5 +129,5 @@ cd src
 npm install
 npm start
 ```
-
+Use the sample bank statements in the public folder to test various features in SmartPocket
 ---
