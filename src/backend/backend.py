@@ -33,7 +33,7 @@ app.add_middleware(
 )
 
 # MongoDB setup so that the uploaded dashboards can be stored
-MONGO_URI = "mongodb+srv://ellaosikoya:smartpocket123@transactionhistory.euvjjnf.mongodb.net/"
+MONGO_URI = os.getenv("MONGO_URI")
 client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=2000)
 
 try:
